@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">BenchApp</string>
+    <string name="app_title">Benchmark APP</string>
+    <string name="btn_cpu">CPU</string>
+    <string name="btn_wifi">Wi-Fi</string>
+    <string name="btn_3g">3G</string>
+    <string name="btn_screen">Screen</string>
+    <string name="btn_gps">GPS</string>
+    <string name="txt_subt">Press on buttons to start benchmark</string>
 </resources>
