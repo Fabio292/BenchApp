@@ -1,5 +1,6 @@
 package fabiogentile.benchapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,10 +31,12 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
 
             case R.id.btn_cpu:
                 Log.i(TAG, "onClick: CPU");
+
                 break;
 
             case R.id.btn_wifi:
@@ -46,6 +49,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_lcd:
                 Log.i(TAG, "onClick: LCD");
+                Intent i = new Intent(getApplicationContext(), LcdActivity.class);
+                startActivity(i);
                 break;
 
             case R.id.btn_gps:

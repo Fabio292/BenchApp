@@ -7,4 +7,8 @@
     <string name="btn_screen">Screen</string>
     <string name="btn_gps">GPS</string>
     <string name="txt_subt">Press on buttons to start benchmark</string>
+
+    <string name="title_activity_lcd">LcdActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
