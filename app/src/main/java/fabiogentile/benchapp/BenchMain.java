@@ -7,7 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-public class BenchMain extends AppCompatActivity implements View.OnClickListener {
+import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
+import fabiogentile.benchapp.StressTask.CpuBench;
+
+
+public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
     private final String TAG = "BenchMain";
 
     @Override
@@ -16,15 +20,20 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         setContentView(R.layout.activity_bench_main);
 
         Button btn_cpu = (Button) findViewById(R.id.btn_cpu);
-        btn_cpu.setOnClickListener(this);
+        if (btn_cpu != null)
+            btn_cpu.setOnClickListener(this);
         Button btn_wifi = (Button) findViewById(R.id.btn_wifi);
-        btn_wifi.setOnClickListener(this);
+        if (btn_wifi != null)
+            btn_wifi.setOnClickListener(this);
         Button btn_3g = (Button) findViewById(R.id.btn_3g);
-        btn_3g.setOnClickListener(this);
+        if (btn_3g != null)
+            btn_3g.setOnClickListener(this);
         Button btn_lcd = (Button) findViewById(R.id.btn_lcd);
-        btn_lcd.setOnClickListener(this);
+        if (btn_lcd != null)
+            btn_lcd.setOnClickListener(this);
         Button btn_gps = (Button) findViewById(R.id.btn_gps);
-        btn_gps.setOnClickListener(this);
+        if (btn_gps != null)
+            btn_gps.setOnClickListener(this);
 
     }
 
@@ -36,7 +45,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_cpu:
                 Log.i(TAG, "onClick: CPU");
-
+                new CpuBench(this).execute();
                 break;
 
             case R.id.btn_wifi:
@@ -64,5 +73,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     }
 
 
-
+    @Override
+    public void CpuTaskCompleted() {
+        Log.i(TAG, "CpuTaskCompleted: cpu end");
+    }
 }

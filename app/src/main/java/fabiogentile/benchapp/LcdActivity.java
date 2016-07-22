@@ -2,21 +2,20 @@ package fabiogentile.benchapp;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.FrameLayout;
 
-import java.io.IOException;
+import fabiogentile.benchapp.CallbackInterfaces.LcdActivityI;
+import fabiogentile.benchapp.StressTask.LcdBench;
 
-interface OnTaskCompleted {
-    void onTaskCompleted();
-}
 
-public class LcdActivity extends Activity implements OnTaskCompleted {
+public class LcdActivity extends Activity implements LcdActivityI {
     private final String TAG = "LcdActivity";
-    private int STATE = 0;
     private FrameLayout layout = null;
+
+    private int colorIndex = 0;
+    private int[] backgroundColorArray = {Color.BLUE, Color.GREEN, Color.RED};
 
 
     @Override
@@ -27,58 +26,38 @@ public class LcdActivity extends Activity implements OnTaskCompleted {
         layout = (FrameLayout) findViewById(R.id.lcd_activity);
 
         Log.i(TAG, "onCreate: launch lcd bench");
+        applyColor(colorIndex);
         new LcdBench(this).execute();
     }
 
+    /**
+     * Apply the background color according to backgroundColorArray
+     *
+     * @param index the index in the array
+     */
+    private void applyColor(int index) {
+        if (index >= 0 && index < backgroundColorArray.length)
+            layout.setBackgroundColor(backgroundColorArray[index]);
+    }
+
+    /**
+     * Callback from the async task
+     * Move to the next color
+     */
     @Override
-    public void onTaskCompleted() {
-        switch (STATE) {
-            case 0:
-                STATE++;
-                layout.setBackgroundColor(Color.GREEN);
-                new LcdBench(this).execute();
-                break;
+    public void LcdTaskCompleted() {
+        //Go to next color
+        colorIndex++;
 
-            case 1:
-                STATE++;
-                layout.setBackgroundColor(Color.BLUE);
-                new LcdBench(this).execute();
-                break;
-
-            default:
-                break;
+        //Check if there are other colors
+        if (colorIndex >= 0 && colorIndex < backgroundColorArray.length) {
+            applyColor(colorIndex);
+            new LcdBench(this).execute();
+        } else {
+            //When there are no more color quit the activity
+            this.finish();
         }
     }
 
-
-    class LcdBench extends AsyncTask<Void, Void, Void> {
-        private final String TAG = "LcdBench";
-        private OnTaskCompleted listener;
-
-        public LcdBench(OnTaskCompleted listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                Log.i(TAG, "doInBackground: launch script");
-                Process process = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/lcd_test.sh");
-                process.waitFor();
-                Log.i(TAG, "doInBackground: script terminated");
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        protected void onPostExecute(Void result) {
-            listener.onTaskCompleted();
-        }
-
-
-    }
 }
+
