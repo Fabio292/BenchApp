@@ -19,10 +19,14 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            Process su = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/cpu_test.sh 2 >  /sdcard/BENCHMARK/result");
+            Thread.sleep(500);
+            // TODO: 22/07/16 Insert marker
+
+            Process su = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/cpu_test.sh 1 >  /sdcard/BENCHMARK/result");
             Log.i(TAG, "doInBackground: script started");
             su.waitFor();
             Log.i(TAG, "doInBackground: script ended");
+
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
