@@ -30,20 +30,11 @@ public class LcdActivity extends Activity implements LcdActivityI {
         new LcdBench(this).execute();
     }
 
-    /**
-     * Apply the background color according to backgroundColorArray
-     *
-     * @param index the index in the array
-     */
     private void applyColor(int index) {
         if (index >= 0 && index < backgroundColorArray.length)
             layout.setBackgroundColor(backgroundColorArray[index]);
     }
 
-    /**
-     * Callback from the async task
-     * Move to the next color
-     */
     @Override
     public void LcdTaskCompleted() {
         //Go to next color

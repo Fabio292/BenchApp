@@ -27,6 +27,8 @@ import fabiogentile.benchapp.Util.SimpleNotification;
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
     private final String TAG = "BenchMain";
     private BroadcastReceiver mReceiver = null;
+    private GpsBench gpsBench = new GpsBench(this);
+    private int gpsRequestNumber;
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
 
@@ -135,10 +137,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             case R.id.btn_gps:
                 Log.i(TAG, "onClick: GPS");
                 lcdManager.turnScreenOff();
+                gpsRequestNumber = 1;
 
-                GpsBench myLocation = new GpsBench(this);
-                Log.i(TAG, "onClick: Start gps position acquiring");
-                if (!myLocation.getLocation(this))
+                Log.i(TAG, "onClick: Start gps position acquiring {" + gpsRequestNumber + "}");
+                if (!gpsBench.getLocation(this))
                     Log.e(TAG, "onClick: error during gps position acquiring");
                 break;
 
@@ -159,11 +161,18 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     @Override
     public void GpsTaskCompleted(Location location) {
         if (location != null)
-            Log.i(TAG, "GpsTaskCompleted: Position: " + location.getLatitude() + " " + location.getLongitude()
+            Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
                     + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
         else
             Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
-        simpleNotificationManager.playSound();
+
+        if (gpsRequestNumber == 2) {
+            Log.i(TAG, "GpsTaskCompleted: Start gps position acquiring {" + gpsRequestNumber + "}");
+            if (!gpsBench.getLocation(this))
+                Log.e(TAG, "GpsTaskCompleted: error during gps position acquiring");
+        } else {
+            simpleNotificationManager.playSound();
+        }
     }
 
 

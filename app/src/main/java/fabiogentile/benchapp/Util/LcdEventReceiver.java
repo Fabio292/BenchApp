@@ -13,7 +13,7 @@ public class LcdEventReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
             Log.i(TAG, "onReceive: Schermo spento");
-            lcdManager.restoreLcdTimeout(context.getContentResolver());
+            lcdManager.restoreLcdTimeout();
         }
     }
 }
