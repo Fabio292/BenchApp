@@ -11,7 +11,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -33,12 +37,17 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bench_main);
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+
         lcdManager.saveLcdTimeout(getContentResolver());
 
+        //<editor-fold desc="ACTON SCREEN events receiver">
         final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         mReceiver = new LcdEventReceiver();
         registerReceiver(mReceiver, filter);
+        //</editor-fold>
 
         //<editor-fold desc="BTN click listener ADD">
         Button btn_cpu = (Button) findViewById(R.id.btn_cpu);
@@ -57,6 +66,31 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         if (btn_gps != null)
             btn_gps.setOnClickListener(this);
         //</editor-fold>
+
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                //Toast.makeText(this, "Settings menu selected", Toast.LENGTH_SHORT).show();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+        }
 
     }
 
@@ -122,16 +156,18 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         PendingIntent resultPendingIntent = PendingIntent.getActivity(
                 getApplicationContext(),
                 0,
-                new Intent(), // add this
+                new Intent(),
                 PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // mId allows you to update the notification later on.
+        //Generate random notification id
         Random r = new Random();
         int notificationId = r.nextInt(50000) + 100;
+
+        //Send notification
         mNotificationManager.notify(notificationId, mBuilder.build());
     }
 

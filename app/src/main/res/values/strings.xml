@@ -11,4 +11,9 @@
     <string name="title_activity_lcd">LcdActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_settings">Settings</string>
+
+
+    <string name="menu_settings_title">Settings</string>
+    <string name="title_activity_main">BenchApp</string>
 </resources>
