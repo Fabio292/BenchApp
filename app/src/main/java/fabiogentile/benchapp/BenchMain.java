@@ -1,16 +1,13 @@
 package fabiogentile.benchapp;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -19,28 +16,36 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
-import java.util.Random;
-
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.CpuBench;
+import fabiogentile.benchapp.StressTask.GpsBench;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
+import fabiogentile.benchapp.Util.SimpleNotification;
 
 
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
     private final String TAG = "BenchMain";
     private BroadcastReceiver mReceiver = null;
     private LcdManager lcdManager = LcdManager.getInstance();
+    private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bench_main);
 
+        //<editor-fold desc="UTIL class setup">
+        simpleNotificationManager.setContext(this.getApplicationContext());
+        simpleNotificationManager.setNotificationService(
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+
+        lcdManager.setContentResolver(getContentResolver());
+        lcdManager.saveLcdTimeout();
+        //</editor-fold>
+
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-
-        lcdManager.saveLcdTimeout(getContentResolver());
 
         //<editor-fold desc="ACTON SCREEN events receiver">
         final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -69,7 +74,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
     }
 
-
+    //<editor-fold desc="TOOLBAR management">
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -83,7 +88,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                //Toast.makeText(this, "Settings menu selected", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "onOptionsItemSelected: Settings selected");
                 return true;
 
             default:
@@ -91,8 +96,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
         }
-
     }
+    //</editor-fold>
 
     @Override
     protected void onDestroy() {
@@ -109,7 +114,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             //<editor-fold desc="BTN click switch">
             case R.id.btn_cpu:
                 Log.i(TAG, "onClick: CPU");
-                lcdManager.turnScreenOff(getContentResolver());
+                lcdManager.turnScreenOff();
                 new CpuBench(this).execute();
                 break;
 
@@ -129,6 +134,12 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_gps:
                 Log.i(TAG, "onClick: GPS");
+                lcdManager.turnScreenOff();
+
+                GpsBench myLocation = new GpsBench(this);
+                Log.i(TAG, "onClick: Start gps position acquiring");
+                if (!myLocation.getLocation(this))
+                    Log.e(TAG, "onClick: error during gps position acquiring");
                 break;
 
             default:
@@ -137,41 +148,27 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             //</editor-fold>
         }
     }
+
     @Override
     public void CpuTaskCompleted() {
         Log.i(TAG, "CpuTaskCompleted: cpu end");
-
-        //Get notification Sound
-        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-        //Create notification
-        NotificationCompat.Builder mBuilder =
-                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.notification_icon_basic)
-                        .setContentTitle("My notification")
-                        .setSound(alarmSound)
-                        .setContentText("Hello World!");
-
-        //Empty intent (if user click on notification nothing will happen
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(
-                getApplicationContext(),
-                0,
-                new Intent(),
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        //Generate random notification id
-        Random r = new Random();
-        int notificationId = r.nextInt(50000) + 100;
-
-        //Send notification
-        mNotificationManager.notify(notificationId, mBuilder.build());
+        //simpleNotificationManager.notify("CPU Task completed", "Cpu task has been completed");
+        simpleNotificationManager.playSound();
     }
 
+    @Override
+    public void GpsTaskCompleted(Location location) {
+        if (location != null)
+            Log.i(TAG, "GpsTaskCompleted: Position: " + location.getLatitude() + " " + location.getLongitude()
+                    + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
+        else
+            Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
+        simpleNotificationManager.playSound();
+    }
+
+
 }
+
 
 
 
