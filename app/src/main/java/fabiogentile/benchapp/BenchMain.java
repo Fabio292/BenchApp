@@ -91,6 +91,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         switch (item.getItemId()) {
             case R.id.action_settings:
                 Log.i(TAG, "onOptionsItemSelected: Settings selected");
+                Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+                startActivity(i);
                 return true;
 
             default:
