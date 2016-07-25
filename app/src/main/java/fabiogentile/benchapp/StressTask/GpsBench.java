@@ -18,6 +18,7 @@ public class GpsBench {
     private Timer timer1;
     private LocationManager lm;
     private MainActivityI callbackInterface;
+
     LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
             timer1.cancel();
@@ -73,6 +74,7 @@ public class GpsBench {
 
         return true;
     }
+
 
     class GetLastLocation extends TimerTask {
         @Override

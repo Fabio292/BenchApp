@@ -19,6 +19,7 @@ import android.widget.Button;
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.CpuBench;
 import fabiogentile.benchapp.StressTask.GpsBench;
+import fabiogentile.benchapp.StressTask.WiFiBench;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
 import fabiogentile.benchapp.Util.SimpleNotification;
@@ -124,6 +125,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_wifi:
                 Log.i(TAG, "onClick: WIFI");
+                new WiFiBench(this).execute();
                 break;
 
             case R.id.btn_3g:
@@ -175,6 +177,12 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         } else {
             simpleNotificationManager.playSound();
         }
+    }
+
+    @Override
+    public void WiFiTaskCompleted() {
+        Log.i(TAG, "WiFiTaskCompleted: wifi completed");
+        simpleNotificationManager.notify("WiFi", "WiFi task completed");
     }
 
 
