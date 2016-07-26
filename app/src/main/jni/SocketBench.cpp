@@ -21,12 +21,12 @@
 #include "lib/sockwrap.h"
 
 #define TERM_STRING "XXXENDXXX\n"
-
+#define MAX_PAYLOAD_SIZE 4*1024
 
 char *prog_name;
 int my_socket;
 int packet_sent, current_rate, start_rate, end_rate, packet_per_rate, payload_size;
-char *buf;
+char buf[MAX_PAYLOAD_SIZE+2];
 struct itimerval it_val;  /* for setting itimer */
 
 void socket_task(void);
@@ -48,20 +48,24 @@ int main(int argc, char** argv)
 	}
 
 	srand(time(NULL));
-	buf = (char*)malloc(payload_size+1);
+	//buf = (char*)malloc(payload_size+2);
 
     //Parse arguments
 	prog_name = argv[0];
     server_ip=argv[1];
     port=atoi(argv[2]);
     if(port < 1024){
-        printf("PORT must be greater than 1024");
+        printf("PORT must be greater than 1024\n");
         exit(2);
     }
     start_rate=atoi(argv[3]);
     end_rate=atoi(argv[4]);
     packet_per_rate=atoi(argv[5]);
     payload_size=atoi(argv[6]);
+    if(payload_size >= MAX_PAYLOAD_SIZE){
+        printf("PAYLOAD_SIZE must be smaller than 4095\n");
+        exit(3);
+    }
 
     current_rate=start_rate;
 
@@ -156,6 +160,7 @@ void set_rate(int rate, itimerval* timer_s){
 
     gen_random(buf,payload_size);
 
+
     timer_s->it_value.tv_sec =     interval/1000;
     timer_s->it_value.tv_usec =    (interval*1000) % 1000000;
     timer_s->it_interval = it_val.it_value;
@@ -164,5 +169,5 @@ void set_rate(int rate, itimerval* timer_s){
         perror("error calling setitimer()");
         exit(1);
     }
-    printf("CURRENT RATE: %d pps (%d ms) -- %s",rate,interval,buf);
+    printf("CURRENT RATE: %d pps (%d ms)\n",rate,interval);
 }

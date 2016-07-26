@@ -52,7 +52,7 @@ do \
 			fi
 
 		fi
-
+		
 		if (( $(echo "$delta > $max" |bc -l) )); then
 			max=$delta
 		fi
