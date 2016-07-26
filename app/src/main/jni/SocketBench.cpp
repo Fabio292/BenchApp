@@ -22,10 +22,11 @@
 #define PAYLOAD_SIZE 20
 
 #define SERV_IP "192.168.1.20"
+#define TERM_STRING "XXXENDXXX\n"
 
 #define START_RATE 5
 #define END_RATE 20
-#define PACKET_PER_RATE 20
+#define PACKET_PER_RATE 1
 
 char *prog_name;
 int my_socket, packet_sent, current_rate;
@@ -66,13 +67,15 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    packet_sent=0;
+    //First packet is discarded to start the delta time calculation
+    packet_sent=-1;
     set_rate(current_rate, &it_val);
 
     while (1)
         pause();
 
     printf("Kill socket\n");
+    Send(my_socket,(void*)"XXX\n",4,0);
     Close(my_socket);
 
     return 0;
@@ -101,6 +104,7 @@ void socket_task(void) {
         current_rate++;
         if(current_rate > END_RATE){
             printf("TERMINATO\n");
+            Send(my_socket,(void*)TERM_STRING,strlen(TERM_STRING),0);
             exit(0);
         }
 
@@ -128,5 +132,5 @@ void set_rate(int rate, itimerval* timer_s){
         exit(1);
     }
 
-    printf("CURRENT RATE: %d pps (%d ms)\n",rate,interval);
+    printf("CURRENT RATE: %d pps (%d ms) -- %s",rate,interval,buf);
 }

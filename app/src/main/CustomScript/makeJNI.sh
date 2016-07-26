@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd jni
+cd ../jni
 ndk-build
 cd ..
 
