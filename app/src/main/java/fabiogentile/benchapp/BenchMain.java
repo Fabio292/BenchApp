@@ -125,6 +125,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_wifi:
                 Log.i(TAG, "onClick: WIFI");
+                lcdManager.turnScreenOff();
                 new WiFiBench(this).execute();
                 break;
 
