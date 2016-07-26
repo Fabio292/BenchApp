@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,19 +20,13 @@
 #include "lib/errlib.h"
 #include "lib/sockwrap.h"
 
-#define BUF_SIZE 500
-#define PAYLOAD_SIZE 20
-
-#define SERV_IP "192.168.1.20"
 #define TERM_STRING "XXXENDXXX\n"
 
-#define START_RATE 5
-#define END_RATE 20
-#define PACKET_PER_RATE 1
 
 char *prog_name;
-int my_socket, packet_sent, current_rate;
-char* buf;
+int my_socket;
+int packet_sent, current_rate, start_rate, end_rate, packet_per_rate, payload_size;
+char *buf;
 struct itimerval it_val;  /* for setting itimer */
 
 void socket_task(void);
@@ -41,21 +37,41 @@ void set_rate(int rate, itimerval* timer_s);
 int main(int argc, char** argv)
 {
 	int port,len;
+	char* server_ip;
 	struct sockaddr_in srv;
 
+
+    //Check arguments
+	if(argc != 7){
+	    printf("USAGE: IP PORT START_RATE END_RATE PACKET_PER_RATE PAYLOAD_SIZE\n");
+	    exit(1);
+	}
+
 	srand(time(NULL));
+	buf = (char*)malloc(payload_size+1);
 
-	buf = (char*)malloc(PAYLOAD_SIZE+1);
-	port=29000;
+    //Parse arguments
 	prog_name = argv[0];
-	current_rate=START_RATE;
+    server_ip=argv[1];
+    port=atoi(argv[2]);
+    if(port < 1024){
+        printf("PORT must be greater than 1024");
+        exit(2);
+    }
+    start_rate=atoi(argv[3]);
+    end_rate=atoi(argv[4]);
+    packet_per_rate=atoi(argv[5]);
+    payload_size=atoi(argv[6]);
 
-	myCreateSA_dns(&srv,(char*)SERV_IP,port);
+    current_rate=start_rate;
+
+    //Socket creation
+	myCreateSA_dns(&srv,(char*)"192.168.1.20",port);
 	my_socket = Socket(AF_INET,SOCK_STREAM,0);
 	Connect(my_socket,(SA*) &srv , sizeof (struct sockaddr));
 
-	print_SA("Connesso al server:",&srv);
-	printf("Buffer: %s\n",buf);
+	print_SA("Connected to server:",&srv);
+
 
     // SIGNAL HANDLER REGISTRATION
     if (signal(SIGALRM, (void (*)(int))socket_task) == SIG_ERR) {
@@ -67,20 +83,26 @@ int main(int argc, char** argv)
         exit(1);
     }
 
+    printf("Signal handler correctly registered\n");fflush(stdout);
+
     //First packet is discarded to start the delta time calculation
     packet_sent=-1;
     set_rate(current_rate, &it_val);
 
+    //Wait
     while (1)
         pause();
 
     printf("Kill socket\n");
-    Send(my_socket,(void*)"XXX\n",4,0);
+    Send(my_socket,(void*)TERM_STRING,strlen(TERM_STRING),0);
     Close(my_socket);
 
     return 0;
 }
 
+/*
+ * Generate random string of given length
+ */
 void gen_random(char *s, const int len) {
     static const char alphanum[] =
         "0123456789"
@@ -94,34 +116,45 @@ void gen_random(char *s, const int len) {
     s[len] = 0;
 }
 
-
+/*
+ * Callback invoked from the timer
+ */
 void socket_task(void) {
-    Send(my_socket,buf,PAYLOAD_SIZE,0);
-    //printf("Inviati %d byte\n",PAYLOAD_SIZE);
+    //printf("Invio byte\n");
+    Send(my_socket,buf,strlen(buf),0);
+    //printf("Inviati %d byte\n",strlen(buf));
     packet_sent++;
 
-    if(packet_sent == PACKET_PER_RATE){
+    //Check if all packets has been sent
+    if(packet_sent == packet_per_rate){
         current_rate++;
-        if(current_rate > END_RATE){
-            printf("TERMINATO\n");
+        if(current_rate > end_rate){
+            printf("LAST\n");
+            //Send sequence terminator
             Send(my_socket,(void*)TERM_STRING,strlen(TERM_STRING),0);
             exit(0);
         }
-
+        //Move forward to next transmission rate
         packet_sent=0;
         set_rate(current_rate, &it_val);
     }
 }
 
+/*
+ * Catch CTRL+C and destroy socket
+ */
 void term_handler(void) {
-    printf("CTRL+C PRESSED...Kill socket\n");
+    printf("CTRL+C PRESSED...Kill socket\n");fflush(stdout);
     Close(my_socket);
 }
 
+/*
+ * Set the timer interval according to the transmission rate requested
+ */
 void set_rate(int rate, itimerval* timer_s){
     int interval = ((int) 1000.0/rate);
 
-    gen_random(buf,PAYLOAD_SIZE);
+    gen_random(buf,payload_size);
 
     timer_s->it_value.tv_sec =     interval/1000;
     timer_s->it_value.tv_usec =    (interval*1000) % 1000000;
@@ -131,6 +164,5 @@ void set_rate(int rate, itimerval* timer_s){
         perror("error calling setitimer()");
         exit(1);
     }
-
     printf("CURRENT RATE: %d pps (%d ms) -- %s",rate,interval,buf);
 }

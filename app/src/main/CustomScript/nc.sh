@@ -11,6 +11,7 @@ count=0
 prev_line="START_LINE"
 first_packet=1
 last_packet=0
+echo $1
 
 nc -k -l 29000 | while read line ; \
 do \
