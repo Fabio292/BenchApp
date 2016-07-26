@@ -136,6 +136,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
+
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         int id = item.getItemId();
@@ -147,6 +148,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
         return super.onMenuItemSelected(featureId, item);
     }
+
 
     /**
      * {@inheritDoc}
