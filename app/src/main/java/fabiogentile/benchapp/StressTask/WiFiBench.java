@@ -12,7 +12,6 @@ import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 public class WiFiBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "WiFiBench";
     private MainActivityI listener;
-    private String payload = "";
 
     public WiFiBench(MainActivityI listener) {
         this.listener = listener;

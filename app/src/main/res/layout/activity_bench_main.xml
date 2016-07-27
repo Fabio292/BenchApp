@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:BenchApp="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:BenchApp="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+        android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:context="fabiogentile.benchapp.BenchMain">
 
@@ -37,7 +43,7 @@
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="45dp" />
+        android:layout_height="15dp" />
 
     <Button
         android:id="@+id/btn_cpu"
@@ -90,5 +96,17 @@
         android:layout_gravity="center_horizontal"
         android:text="@string/btn_gps" />
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="7dp" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/btn_audio"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/btn_audio" />
+
+    </LinearLayout>
+
+</ScrollView>

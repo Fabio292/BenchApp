@@ -7,5 +7,6 @@ public interface MainActivityI {
     void CpuTaskCompleted();
     void GpsTaskCompleted(Location location);
 
+    void AudioTaskCompleted();
     void WiFiTaskCompleted();
 }

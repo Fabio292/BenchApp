@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.location.Location;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,13 +18,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
+
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
+import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
 import fabiogentile.benchapp.StressTask.GpsBench;
 import fabiogentile.benchapp.StressTask.WiFiBench;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
 import fabiogentile.benchapp.Util.SimpleNotification;
+import fabiogentile.benchapp.Util.VolumeManager;
 
 
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
@@ -32,6 +38,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     private int gpsRequestNumber;
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
+    private VolumeManager volumeManager = VolumeManager.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +52,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         lcdManager.setContentResolver(getContentResolver());
         lcdManager.saveLcdTimeout();
+
+        volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
+        volumeManager.saveVolume();
         //</editor-fold>
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -73,6 +83,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         Button btn_gps = (Button) findViewById(R.id.btn_gps);
         if (btn_gps != null)
             btn_gps.setOnClickListener(this);
+        Button btn_audio = (Button) findViewById(R.id.btn_audio);
+        if (btn_audio != null)
+            btn_audio.setOnClickListener(this);
         //</editor-fold>
 
     }
@@ -131,6 +144,20 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_3g:
                 Log.i(TAG, "onClick: 3G");
+
+                Log.i(TAG, "onClick: " + volumeManager.getMax());
+
+
+                AssetManager assetManager = getAssets();
+                try {
+                    for (String res : assetManager.list("")) {
+                        Log.i(TAG, "onClick: " + res);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 break;
 
             case R.id.btn_lcd:
@@ -149,6 +176,13 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                     Log.e(TAG, "onClick: error during gps position acquiring");
                 break;
 
+            case R.id.btn_audio:
+                Log.i(TAG, "onClick: AUDIO");
+                volumeManager.setVolume(volumeManager.getMax());
+                new AudioBench(this, getApplicationContext()).execute();
+                volumeManager.restoreVolume();
+                break;
+
             default:
                 Log.e(TAG, "onClick: button not recognized");
                 break;
@@ -158,9 +192,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
     @Override
     public void CpuTaskCompleted() {
-        Log.i(TAG, "CpuTaskCompleted: cpu end");
-        //simpleNotificationManager.notify("CPU Task completed", "Cpu task has been completed");
-        simpleNotificationManager.playSound();
+        Log.i(TAG, "CpuTaskCompleted: cpu completed");
+        simpleNotificationManager.notify("CPU", "Cpu task completed");
+        //simpleNotificationManager.playSound();
     }
 
     @Override
@@ -178,6 +212,12 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         } else {
             simpleNotificationManager.playSound();
         }
+    }
+
+    @Override
+    public void AudioTaskCompleted() {
+        Log.i(TAG, "AudioTaskCompleted: audio completed");
+        simpleNotificationManager.notify("Audio", "Audio task completed");
     }
 
     @Override
