@@ -46,5 +46,7 @@ public class LcdManager {
         saveLcdTimeout();
         //Set screen timeout at 10 milliseconds
         Settings.System.putInt(content, Settings.System.SCREEN_OFF_TIMEOUT, 10);
+
+
     }
 }

@@ -12,15 +12,26 @@ import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 public class WiFiBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "WiFiBench";
     private MainActivityI listener;
+    private Object syncToken;
 
-    public WiFiBench(MainActivityI listener) {
+    public WiFiBench(MainActivityI listener, Object token) {
         this.listener = listener;
+        this.syncToken = token;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            Log.i(TAG, "doInBackground: launch script");
+            //Wait for screen to turn off
+            synchronized (syncToken) {
+                try {
+                    syncToken.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Log.i(TAG, "doInBackground: start script");
 
             Process su = Runtime.getRuntime().exec("su");
             DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
@@ -37,7 +48,7 @@ public class WiFiBench extends AsyncTask<Void, Void, Void> {
 //                Log.i(TAG, "doInBackground: " + line);
 //            }
             su.waitFor();
-            Log.i(TAG, "doInBackground: script terminated");
+            Log.i(TAG, "doInBackground: script ended");
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

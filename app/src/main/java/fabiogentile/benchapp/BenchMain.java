@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -17,8 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-
-import java.io.IOException;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.AudioBench;
@@ -33,9 +30,10 @@ import fabiogentile.benchapp.Util.VolumeManager;
 
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
     private final String TAG = "BenchMain";
-    private BroadcastReceiver mReceiver = null;
-    private GpsBench gpsBench = new GpsBench(this);
+    Object syncToken = new Object();
+    private GpsBench gpsBench;
     private int gpsRequestNumber;
+    private BroadcastReceiver mReceiver = null;
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
     private VolumeManager volumeManager = VolumeManager.getInstance();
@@ -55,6 +53,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
         volumeManager.saveVolume();
+
+        this.gpsBench = new GpsBench(this, lcdManager);
         //</editor-fold>
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -63,7 +63,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         //<editor-fold desc="ACTON SCREEN events receiver">
         final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
-        mReceiver = new LcdEventReceiver();
+        mReceiver = new LcdEventReceiver(syncToken);
         registerReceiver(mReceiver, filter);
         //</editor-fold>
 
@@ -132,32 +132,20 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             //<editor-fold desc="BTN click switch">
             case R.id.btn_cpu:
                 Log.i(TAG, "onClick: CPU");
+                new CpuBench(this, syncToken).execute();
                 lcdManager.turnScreenOff();
-                new CpuBench(this).execute();
                 break;
 
             case R.id.btn_wifi:
                 Log.i(TAG, "onClick: WIFI");
+                // TODO: 27/07/16 check interface name
+                new WiFiBench(this, syncToken).execute();
                 lcdManager.turnScreenOff();
-                new WiFiBench(this).execute();
                 break;
 
             case R.id.btn_3g:
                 Log.i(TAG, "onClick: 3G");
-
-                Log.i(TAG, "onClick: " + volumeManager.getMax());
-
-
-                AssetManager assetManager = getAssets();
-                try {
-                    for (String res : assetManager.list("")) {
-                        Log.i(TAG, "onClick: " + res);
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+                // TODO: 27/07/16 CHECK connectivity + interface name
                 break;
 
             case R.id.btn_lcd:
@@ -168,18 +156,18 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_gps:
                 Log.i(TAG, "onClick: GPS");
-                lcdManager.turnScreenOff();
                 gpsRequestNumber = 1;
 
-                Log.i(TAG, "onClick: Start gps position acquiring {" + gpsRequestNumber + "}");
-                if (!gpsBench.getLocation(this))
+                if (!gpsBench.getLocation(this, syncToken))
                     Log.e(TAG, "onClick: error during gps position acquiring");
                 break;
 
             case R.id.btn_audio:
                 Log.i(TAG, "onClick: AUDIO");
                 volumeManager.setVolume(volumeManager.getMax());
-                new AudioBench(this, getApplicationContext()).execute();
+                new AudioBench(this, getApplicationContext(), syncToken).execute();
+                lcdManager.turnScreenOff();
+
                 volumeManager.restoreVolume();
                 break;
 
@@ -190,28 +178,26 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         }
     }
 
+    //<editor-fold desc="TASK COMPLETION callback">
+    @Override
+    public void GpsTaskCompleted(Location location) {
+        if (location == null)
+            Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
+        else {
+            // TODO: 27/07/16 numero richieste nei parametri
+            if (gpsRequestNumber == 2) {
+                if (!gpsBench.getLocation(this, null))
+                    Log.e(TAG, "GpsTaskCompleted: error during gps position acquiring");
+            } else {
+                simpleNotificationManager.playSound();
+            }
+        }
+    }
+
     @Override
     public void CpuTaskCompleted() {
         Log.i(TAG, "CpuTaskCompleted: cpu completed");
         simpleNotificationManager.notify("CPU", "Cpu task completed");
-        //simpleNotificationManager.playSound();
-    }
-
-    @Override
-    public void GpsTaskCompleted(Location location) {
-        if (location != null)
-            Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
-                    + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
-        else
-            Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
-
-        if (gpsRequestNumber == 2) {
-            Log.i(TAG, "GpsTaskCompleted: Start gps position acquiring {" + gpsRequestNumber + "}");
-            if (!gpsBench.getLocation(this))
-                Log.e(TAG, "GpsTaskCompleted: error during gps position acquiring");
-        } else {
-            simpleNotificationManager.playSound();
-        }
     }
 
     @Override
@@ -225,6 +211,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         Log.i(TAG, "WiFiTaskCompleted: wifi completed");
         simpleNotificationManager.notify("WiFi", "WiFi task completed");
     }
+    //</editor-fold>
 
 
 }

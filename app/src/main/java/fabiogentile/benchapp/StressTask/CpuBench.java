@@ -11,19 +11,30 @@ import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 public class CpuBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "CpuBench";
     private MainActivityI listener;
+    private Object syncToken;
 
-    public CpuBench(MainActivityI listener) {
+    public CpuBench(MainActivityI listener, Object token) {
         this.listener = listener;
+        this.syncToken = token;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            Thread.sleep(500);
+            //Wait for screen to turn off
+            synchronized (syncToken) {
+                try {
+                    syncToken.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
             // TODO: 22/07/16 Insert marker
 
+            Log.i(TAG, "doInBackground: start script");
             Process su = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/cpu_test.sh 1 >  /sdcard/BENCHMARK/result");
-            Log.i(TAG, "doInBackground: script started");
             su.waitFor();
             Log.i(TAG, "doInBackground: script ended");
 

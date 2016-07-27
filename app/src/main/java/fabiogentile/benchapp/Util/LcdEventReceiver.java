@@ -9,11 +9,22 @@ public class LcdEventReceiver extends BroadcastReceiver {
     private final String TAG = "ScreenReceiver";
     private LcdManager lcdManager = LcdManager.getInstance();
 
+    private Object syncToken;
+
+    public LcdEventReceiver(Object token) {
+        this.syncToken = token;
+    }
+
     @Override
     public void onReceive(final Context context, final Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
             Log.i(TAG, "onReceive: Schermo spento");
             lcdManager.restoreLcdTimeout();
+
+            synchronized (syncToken) {
+                syncToken.notifyAll();
+            }
+
         }
     }
 }

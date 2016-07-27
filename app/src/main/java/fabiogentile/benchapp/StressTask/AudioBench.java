@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -16,19 +17,32 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "CpuBench";
     private MainActivityI listener;
     private Context context;
-    private String[] audioFiles = {"Tone - ogg.ogg", "Tone - 32.mp3"};
+    private Object syncToken;
+    private String[] audioFiles = {"Tone - ogg.ogg", "Tone - vbr.mp3", "Tone - wav.wav",
+            "Tone - 32.mp3", "Tone - 128.mp3", "Tone - 192.mp3", "Tone - 320.mp3"};
 
-    public AudioBench(MainActivityI listener, Context context) {
+    public AudioBench(MainActivityI listener, Context context, Object token) {
         this.listener = listener;
         this.context = context;
+        this.syncToken = token;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
+        //Wait for screen to turn off
+        synchronized (syncToken) {
+            try {
+                syncToken.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
+        Log.i(TAG, "doInBackground: launch script");
         for (String fname : audioFiles) {
             playAudio(fname, 2000, 1000); // TODO: 27/07/16 leggere i numeri da impostazioni
         }
+        Log.i(TAG, "doInBackground: script ended");
 
         return null;
     }
@@ -42,6 +56,7 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
      */
     private void playAudio(String fname, int duration, int silenceDuration) {
         try {
+            Log.i(TAG, "playAudio: playing " + fname);
             AssetFileDescriptor afd = context.getAssets().openFd(fname);
             MediaPlayer player = new MediaPlayer();
             player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
