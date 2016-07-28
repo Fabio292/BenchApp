@@ -5,28 +5,87 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
-import fabiogentile.benchapp.Util.LcdManager;
 
-// FIXME: 27/07/16 !!!!!!!
-// http://stackoverflow.com/a/3145655
-public class GpsBench {
-    private final String TAG = "MyLocation";
-    private Timer timer1;
-    private LocationManager lm;
+
+public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationResolver.LocationResult {
+    private final String TAG = "GpsBench";
+    private Context context;
     private MainActivityI callbackInterface;
-    LocationListener locationListenerGps = new LocationListener() {
+    private Location location = null;
+
+    public GpsBench(Context context, MainActivityI callbackI) {
+        this.context = context;
+        callbackInterface = callbackI;
+    }
+
+    @Override
+    protected Void doInBackground(Void... params) {
+        try {
+
+            Looper.prepare();
+            LocationResolver locationResolver = new LocationResolver();
+
+            Log.i(TAG, "doInBackground: script started");
+            if (!locationResolver.getLocation(context, this, 30000)) // TODO: 28/07/16 prendere il timeout da settings
+                Log.e(TAG, "doInBackground: error while requesting GPS position");
+            Looper.loop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    protected void onPostExecute(Void result) {
+//        Log.i(TAG, "onPostExecute: script ended");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        callbackInterface.GpsTaskCompleted(location);
+    }
+
+    @Override
+    public void gotLocation(Location location) {
+        this.location = location;
+        Log.i(TAG, "gotLocation");
+
+        Looper.myLooper().quit();
+    }
+
+    @Override
+    public void timeoutOccurred(Location location) {
+        this.location = location;
+        Log.i(TAG, "timeoutOccurred");
+
+        Looper.myLooper().quit();
+    }
+}
+
+
+class LocationResolver {
+    private static LocationManager locationManager;
+    private Timer timeoutTimer;
+    private LocationResult locationCallbackInterface;
+    private final LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
-            timer1.cancel();
-            callbackInterface.GpsTaskCompleted(location);
+
+
+            timeoutTimer.cancel();
+            timeoutTimer.purge();
             try {
-                lm.removeUpdates(this);
+                locationManager.removeUpdates(this);
+                locationCallbackInterface.gotLocation(location);
             } catch (SecurityException e) {
                 e.printStackTrace();
             }
@@ -41,93 +100,59 @@ public class GpsBench {
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
     };
-    private LcdManager lcdManager;
-    private boolean gps_enabled = false;
+    private boolean gpsEnabled = false;
 
-    public GpsBench(MainActivityI listener, LcdManager lcdManager) {
-        this.callbackInterface = listener;
-        this.lcdManager = lcdManager;
-    }
+    public synchronized boolean getLocation(Context context, LocationResult result, int maxMillisToWait) {
+        locationCallbackInterface = result;
+        if (locationManager == null)
+            locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
-    public boolean getLocation(Context context, Object syncToken) {
-
-        if (lm == null)
-            lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-
-        //exceptions will be thrown if provider is not permitted.
+        // exceptions will be thrown if provider is not permitted.
         try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         } catch (Exception ex) {
             ex.printStackTrace();
-            return false;
         }
 
-        //don't start listeners if no provider is enabled
-        if (!gps_enabled)
+        // don't start listeners if no provider is enabled
+        if (!gpsEnabled)
             return false;
 
         try {
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
         } catch (SecurityException e) {
             e.printStackTrace();
-            return false;
         }
 
-        timer1 = new Timer();
-        TimerTask task = new GetLastLocation(syncToken, lcdManager);
-        timer1.schedule(task, 60000); // TODO: 27/07/16 leggere da settings
-        lcdManager.turnScreenOff();
-
+        //Schedule the timeout
+        timeoutTimer = new Timer();
+        timeoutTimer.schedule(new GetLastTimeout(), maxMillisToWait);
         return true;
     }
 
+    public interface LocationResult {
+        void gotLocation(Location location);
 
-    class GetLastLocation extends TimerTask {
-        Object syncToken;
-        LcdManager lcdManager;
+        void timeoutOccurred(Location location);
+    }
 
-        public GetLastLocation(Object token, LcdManager lcdManager) {
-            this.syncToken = token;
-            this.lcdManager = lcdManager;
-        }
+    //Timeout timer
+    private class GetLastTimeout extends TimerTask {
 
         @Override
         public void run() {
             try {
-                //Wait for screen to turn off
-                Log.i(TAG, "run: dentro il thread");
-                if (syncToken != null) {
 
-                    synchronized (syncToken) {
-                        try {
-                            syncToken.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                locationManager.removeUpdates(locationListenerGps);
 
-                lm.removeUpdates(locationListenerGps);
+                Location gpsLocation = null;
+                if (gpsEnabled)
+                    gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-                Location gps_loc = null;
-                Log.i(TAG, "run: Start GPS position acquiring");
-                if (gps_enabled)
-                    gps_loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-                if (gps_loc != null) {
-                    Log.i(TAG, "run: GPS position scquired: " + gps_loc.getLatitude() + " " + gps_loc.getLongitude()
-                            + " " + gps_loc.getAltitude() + " accuracy: " + gps_loc.getAccuracy());
-                    callbackInterface.GpsTaskCompleted(gps_loc);
-                    return;
-                }
-
-                callbackInterface.GpsTaskCompleted(null);
-
+                locationCallbackInterface.timeoutOccurred(gpsLocation);
             } catch (SecurityException e) {
                 e.printStackTrace();
-                callbackInterface.GpsTaskCompleted(null);
             }
         }
     }
 }
-

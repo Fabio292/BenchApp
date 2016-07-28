@@ -17,6 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
@@ -31,7 +35,6 @@ import fabiogentile.benchapp.Util.VolumeManager;
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
     private final String TAG = "BenchMain";
     Object syncToken = new Object();
-    private GpsBench gpsBench;
     private int gpsRequestNumber;
     private BroadcastReceiver mReceiver = null;
     private LcdManager lcdManager = LcdManager.getInstance();
@@ -54,7 +57,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
         volumeManager.saveVolume();
 
-        this.gpsBench = new GpsBench(this, lcdManager);
+        //this.gpsBench = new GpsBench(this);
         //</editor-fold>
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -146,6 +149,16 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             case R.id.btn_3g:
                 Log.i(TAG, "onClick: 3G");
                 // TODO: 27/07/16 CHECK connectivity + interface name
+
+                try {
+                    for (Enumeration<NetworkInterface> list = NetworkInterface.getNetworkInterfaces(); list.hasMoreElements(); ) {
+                        NetworkInterface i = list.nextElement();
+                        Log.e("network_interfaces", "display name " + i.getDisplayName());
+                    }
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
+                
                 break;
 
             case R.id.btn_lcd:
@@ -156,10 +169,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_gps:
                 Log.i(TAG, "onClick: GPS");
+                // TODO: 28/07/16 gestire monitor spento
+                //lcdManager.turnScreenOff();
                 gpsRequestNumber = 1;
-
-                if (!gpsBench.getLocation(this, syncToken))
-                    Log.e(TAG, "onClick: error during gps position acquiring");
+                new GpsBench(getApplicationContext(), this).execute();
                 break;
 
             case R.id.btn_audio:
@@ -181,17 +194,19 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     //<editor-fold desc="TASK COMPLETION callback">
     @Override
     public void GpsTaskCompleted(Location location) {
-        if (location == null)
-            Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
-        else {
-            // TODO: 27/07/16 numero richieste nei parametri
-            if (gpsRequestNumber == 2) {
-                if (!gpsBench.getLocation(this, null))
-                    Log.e(TAG, "GpsTaskCompleted: error during gps position acquiring");
+        if (location != null) {
+            Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
+                    + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
+
+            // TODO: 27/07/16 recupero numero richieste dai parametri
+            if (gpsRequestNumber <= 3) {
+
+                new GpsBench(getApplicationContext(), this).execute();
             } else {
-                simpleNotificationManager.playSound();
+                simpleNotificationManager.notify("GPS", "Gps task completed");
             }
-        }
+        } else
+            Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
     }
 
     @Override
