@@ -6,6 +6,7 @@
     <string name="btn_3g">3G</string>
     <string name="btn_screen">Screen</string>
     <string name="btn_gps">GPS</string>
+    <string name="btn_audio">AUDIO</string>
     <string name="txt_subt">Press on buttons to start benchmark</string>
 
     <string name="title_activity_lcd">LcdActivity</string>
@@ -17,11 +18,11 @@
     <string name="menu_settings_title">Settings</string>
     <string name="title_activity_main">BenchApp</string>
 
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
-
     <string name="pref_title_social_recommendations">Enable social recommendations</string>
     <string name="pref_description_social_recommendations">Recommendations for people to contact
         based on your message history
@@ -74,5 +75,5 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
-    <string name="btn_audio">AUDIO</string>
+
 </resources>
