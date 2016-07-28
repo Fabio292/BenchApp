@@ -4,36 +4,42 @@
         android:defaultValue="@string/default_wifi_ip_address"
         android:inputType="text"
         android:key="wifi_ip_address"
+        android:summary="@string/default_wifi_ip_address"
         android:title="Server IP address" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_wifi_port"
         android:inputType="number"
-        android:key="wifi_port"
+        android:key="wifi_server_port"
+        android:summary="@string/default_wifi_port"
         android:title="Server Port" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_wifi_start_rate"
         android:inputType="number"
         android:key="wifi_start_rate"
+        android:summary="@string/default_wifi_start_rate"
         android:title="Start packet rate (pkt/s)" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_wifi_end_rate"
         android:inputType="number"
         android:key="wifi_end_rate"
+        android:summary="@string/default_wifi_end_rate"
         android:title="End packet rate (pkt/s)" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_wifi_packet_per_rate"
         android:inputType="number"
         android:key="wifi_packet_per_rate"
+        android:summary="@string/default_wifi_packet_per_rate"
         android:title="Number of packet per rate" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_wifi_payload_size"
         android:inputType="number"
         android:key="wifi_payload_size"
+        android:summary="@string/default_wifi_payload_size"
         android:title="payload size (bytes)" />
 
 </PreferenceScreen>

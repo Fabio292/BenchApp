@@ -6,31 +6,31 @@
         android:key="threeG_ip_address"
         android:title="Server IP address" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_threeG_port"
         android:inputType="number"
-        android:key="threeG_port"
+        android:key="threeG_server_port"
         android:title="Server Port" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_threeG_start_rate"
         android:inputType="number"
         android:key="threeG_start_rate"
         android:title="Start packet rate (pkt/s)" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_threeG_end_rate"
         android:inputType="number"
         android:key="threeG_end_rate"
         android:title="End packet rate (pkt/s)" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_threeG_packet_per_rate"
         android:inputType="number"
         android:key="threeG_packet_per_rate"
         android:title="Number of packet per rate" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_threeG_payload_size"
         android:inputType="number"
         android:key="threeG_payload_size"

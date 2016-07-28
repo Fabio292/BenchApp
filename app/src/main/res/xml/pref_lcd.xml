@@ -1,12 +1,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_lcd_step_duration"
         android:inputType="number"
         android:key="lcd_step_duration"
         android:title="Duration of luminosity step (in ms)" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_lcd_step_increment"
         android:inputType="number"
         android:key="lcd_step_increment"

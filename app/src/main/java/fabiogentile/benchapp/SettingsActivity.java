@@ -3,19 +3,22 @@ package fabiogentile.benchapp;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.MenuItem;
 
 import java.util.List;
+
+import fabiogentile.benchapp.Util.IntEditTextPreference;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -28,7 +31,8 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends AppCompatPreferenceActivity {
+public class SettingsActivity extends AppCompatPreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private static String TAG = "SettingsActivity";
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -41,23 +45,37 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
 
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-
-            } else {
+//            if (preference instanceof ListPreference) {
+//                // For list preferences, look up the correct display value in
+//                // the preference's 'entries' list.
+//                ListPreference listPreference = (ListPreference) preference;
+//                int index = listPreference.findIndexOfValue(stringValue);
+//
+//                // Set the summary to reflect the new value.
+//                preference.setSummary(
+//                        index >= 0
+//                                ? listPreference.getEntries()[index]
+//                                : null);
+//
+////            } else if (preference instanceof IntEditTextPreference){
+////                Log.i("we", "onPreferenceChange: !!");
+//            } else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
-                preference.setSummary(stringValue);
-            }
+            preference.setSummary(stringValue);
+
+            SharedPreferences.Editor e = preference.getEditor();
+
+            e.clear();
+            if (preference instanceof IntEditTextPreference)
+                e.putInt(preference.getKey(), Integer.parseInt(stringValue));
+            else
+                e.putString(preference.getKey(), stringValue);
+            e.commit();
+
+            Log.i(TAG, "onPreferenceChange: " + preference.getTitle());
+            Log.i(TAG, "onPreferenceChange: val=" + value);
+//            }
             return true;
         }
     };
@@ -84,12 +102,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
+        String key = preference.getKey();
+
+        if (preference instanceof IntEditTextPreference) {
+            String val = preference.getSummary().toString();
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    Integer.parseInt(val));
+        } else {
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    PreferenceManager.getDefaultSharedPreferences(preference.getContext())
+                            .getString(key, ""));
+        }
     }
 
     @Override
@@ -155,6 +178,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName);
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.d(TAG, "onSharedPreferenceChanged() - key = " + key);
+    }
+
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class CpuPreferenceFragment extends PreferenceFragment {
@@ -187,7 +215,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
 
             bindPreferenceSummaryToValue(findPreference("wifi_ip_address"));
-            bindPreferenceSummaryToValue(findPreference("wifi_port"));
+            bindPreferenceSummaryToValue(findPreference("wifi_server_port"));
             bindPreferenceSummaryToValue(findPreference("wifi_start_rate"));
             bindPreferenceSummaryToValue(findPreference("wifi_end_rate"));
             bindPreferenceSummaryToValue(findPreference("wifi_packet_per_rate"));
@@ -214,7 +242,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
 
             bindPreferenceSummaryToValue(findPreference("threeG_ip_address"));
-            bindPreferenceSummaryToValue(findPreference("threeG_port"));
+            bindPreferenceSummaryToValue(findPreference("threeG_server_port"));
             bindPreferenceSummaryToValue(findPreference("threeG_start_rate"));
             bindPreferenceSummaryToValue(findPreference("threeG_end_rate"));
             bindPreferenceSummaryToValue(findPreference("threeG_packet_per_rate"));

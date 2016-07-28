@@ -19,6 +19,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.Map;
+
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
@@ -36,7 +38,6 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     Object syncToken = new Object();
     private int gpsRequestNumber;
     private BroadcastReceiver mReceiver = null;
-    private SharedPreferences prefs;
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
     private VolumeManager volumeManager = VolumeManager.getInstance();
@@ -57,7 +58,6 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
         volumeManager.saveVolume();
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //</editor-fold>
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -131,6 +131,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
     @Override
     public void onClick(View v) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         switch (v.getId()) {
             //<editor-fold desc="BTN click switch">
             case R.id.btn_cpu:
@@ -149,8 +150,16 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             case R.id.btn_3g:
                 Log.i(TAG, "onClick: 3G");
                 // TODO: 27/07/16 CHECK connectivity + interface name?
-                new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");
-                lcdManager.turnScreenOff();
+
+                Map<String, ?> keys = prefs.getAll();
+
+                for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                    Log.d("map values", entry.getKey() + ": " +
+                            entry.getValue().toString());
+                }
+
+                //new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");
+                //lcdManager.turnScreenOff();
 
                 break;
 
@@ -187,6 +196,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         if (location != null) {
             Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
                     + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
             if (gpsRequestNumber <= prefs.getInt("gps_requests_number", 4)) {
                 new GpsBench(this, null, getApplicationContext(), prefs).execute();

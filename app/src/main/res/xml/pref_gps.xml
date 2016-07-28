@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_gps_requests_number"
         android:inputType="number"
         android:key="gps_requests_number"
         android:title="Number of gps location requests" />
 
-    <EditTextPreference
+    <fabiogentile.benchapp.Util.IntEditTextPreference
         android:defaultValue="@string/default_gps_request_timeout"
         android:inputType="number"
         android:key="gps_request_timeout"

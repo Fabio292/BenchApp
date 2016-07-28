@@ -11,7 +11,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-
         <activity
             android:name=".BenchMain"
             android:label="@string/title_activity_main">
@@ -21,13 +20,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".LcdActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_lcd"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" />
-
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -36,7 +33,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fabiogentile.benchapp.BenchMain" />
         </activity>
-
     </application>
 
 </manifest>
