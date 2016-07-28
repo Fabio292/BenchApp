@@ -25,7 +25,7 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
             Log.i(TAG, "doInBackground: launch script");
             // TODO: 28/07/16 marker
             //USAGE: STEP_DURATION (in ms) VALUE_INCREMENT(0-255)
-            Process process = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/lcd_test.sh");
+            Process process = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/lcd_test.sh"); // TODO: 28/07/16 valori from settings
             process.waitFor();
             Log.i(TAG, "doInBackground: script terminated");
 

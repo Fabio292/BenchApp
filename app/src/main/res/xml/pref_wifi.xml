@@ -1,0 +1,33 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="192.168.1.20"
+        android:inputType="text"
+        android:key="wifi_ip_address"
+        android:title="Server IP address" />
+
+    <EditTextPreference
+        android:defaultValue="29000"
+        android:inputType="number"
+        android:key="wifi_port"
+        android:title="Server Port" />
+
+    <EditTextPreference
+        android:defaultValue="5"
+        android:inputType="number"
+        android:key="wifi_start_rate"
+        android:title="Start packet rate (pkt/s)" />
+
+    <EditTextPreference
+        android:defaultValue="20"
+        android:inputType="number"
+        android:key="wifi_end_rate"
+        android:title="End packet rate (pkt/s)" />
+
+    <EditTextPreference
+        android:defaultValue="100"
+        android:inputType="number"
+        android:key="wifi_payload_size"
+        android:title="payload size (bytes)" />
+
+</PreferenceScreen>
