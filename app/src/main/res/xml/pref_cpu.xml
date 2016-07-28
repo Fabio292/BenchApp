@@ -2,7 +2,7 @@
 
 
     <EditTextPreference
-        android:defaultValue="5"
+        android:defaultValue="@string/default_cpu_state_duration"
         android:inputType="number"
         android:key="cpu_state_duration"
         android:title="Cpu cycle duration (seconds)" />

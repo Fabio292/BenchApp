@@ -5,9 +5,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -17,10 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
@@ -29,6 +27,7 @@ import fabiogentile.benchapp.StressTask.SocketBench;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
 import fabiogentile.benchapp.Util.SimpleNotification;
+import fabiogentile.benchapp.Util.SocketTypeEnum;
 import fabiogentile.benchapp.Util.VolumeManager;
 
 
@@ -37,6 +36,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     Object syncToken = new Object();
     private int gpsRequestNumber;
     private BroadcastReceiver mReceiver = null;
+    private SharedPreferences prefs;
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
     private VolumeManager volumeManager = VolumeManager.getInstance();
@@ -46,7 +46,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bench_main);
 
-        //<editor-fold desc="UTIL class setup">
+        //<editor-fold desc="Utility class setup">
         simpleNotificationManager.setContext(this.getApplicationContext());
         simpleNotificationManager.setNotificationService(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
@@ -57,7 +57,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
         volumeManager.saveVolume();
 
-        //this.gpsBench = new GpsBench(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //</editor-fold>
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -135,32 +135,21 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             //<editor-fold desc="BTN click switch">
             case R.id.btn_cpu:
                 Log.i(TAG, "onClick: CPU");
-                new CpuBench(this, syncToken).execute();
+                new CpuBench(this, syncToken, prefs).execute();
                 lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_wifi:
                 Log.i(TAG, "onClick: WIFI");
                 // TODO: 27/07/16 check connectivity + interface name?
-                new SocketBench(this, syncToken).execute("wlan0");
+                new SocketBench(this, syncToken, prefs, SocketTypeEnum.WIFI).execute("wlan0");
                 lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_3g:
                 Log.i(TAG, "onClick: 3G");
-                try {
-                    Log.i(TAG, "Interface List:");
-                    for (Enumeration<NetworkInterface> list = NetworkInterface.getNetworkInterfaces(); list.hasMoreElements(); ) {
-                        NetworkInterface i = list.nextElement();
-                        if (i.isUp() && !i.isLoopback())
-                            Log.i(TAG, i.getDisplayName());
-                    }
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                }
-
                 // TODO: 27/07/16 CHECK connectivity + interface name?
-                new SocketBench(this, syncToken).execute("rmnet0");
+                new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");
                 lcdManager.turnScreenOff();
 
                 break;
@@ -173,7 +162,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_gps:
                 Log.i(TAG, "onClick: GPS");
-                new GpsBench(getApplicationContext(), this, syncToken).execute();
+                new GpsBench(this, syncToken, getApplicationContext(), prefs).execute();
                 gpsRequestNumber = 1;
                 lcdManager.turnScreenOff();
                 break;
@@ -181,7 +170,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             case R.id.btn_audio:
                 Log.i(TAG, "onClick: AUDIO");
                 volumeManager.setVolume(volumeManager.getMax());
-                new AudioBench(this, getApplicationContext(), syncToken).execute();
+                new AudioBench(this, getApplicationContext(), syncToken, prefs).execute();
                 lcdManager.turnScreenOff();
                 break;
 
@@ -199,10 +188,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
                     + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
 
-            // TODO: 27/07/16 recupero numero richieste dai parametri
-            if (gpsRequestNumber <= 3) {
-
-                new GpsBench(getApplicationContext(), this, null).execute();
+            if (gpsRequestNumber <= prefs.getInt("gps_requests_number", 4)) {
+                new GpsBench(this, null, getApplicationContext(), prefs).execute();
             } else {
                 simpleNotificationManager.notify("GPS", "Gps task completed");
             }
@@ -232,7 +219,5 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
 
 }
-
-
 
 

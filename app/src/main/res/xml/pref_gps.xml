@@ -2,13 +2,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
-        android:defaultValue="4"
+        android:defaultValue="@string/default_gps_requests_number"
         android:inputType="number"
         android:key="gps_requests_number"
         android:title="Number of gps location requests" />
 
     <EditTextPreference
-        android:defaultValue="30"
+        android:defaultValue="@string/default_gps_request_timeout"
         android:inputType="number"
         android:key="gps_request_timeout"
         android:title="Timeout fo reach gps request (in seconds)" />

@@ -2,13 +2,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
-        android:defaultValue="500"
+        android:defaultValue="@string/default_general_marker_duration_high"
         android:inputType="number"
         android:key="general_marker_duration_high"
         android:title="Duration of HIGH state in marker (in ms)" />
 
     <EditTextPreference
-        android:defaultValue="500"
+        android:defaultValue="@string/default_general_marker_duration_low"
         android:inputType="number"
         android:key="general_marker_duration_low"
         android:title="Duration of LOW state in marker (in ms)" />

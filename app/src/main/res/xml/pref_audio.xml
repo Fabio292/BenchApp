@@ -2,13 +2,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
-        android:defaultValue="5"
+        android:defaultValue="@string/default_audio_play_duration"
         android:inputType="number"
         android:key="audio_play_duration"
         android:title="Duration of each file (in seconds)" />
 
     <EditTextPreference
-        android:defaultValue="2"
+        android:defaultValue="@string/default_audio_pause_duration"
         android:inputType="number"
         android:key="audio_pause_duration"
         android:title="Pause between each file (in seconds)" />

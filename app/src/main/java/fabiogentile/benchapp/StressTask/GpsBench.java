@@ -2,6 +2,7 @@ package fabiogentile.benchapp.StressTask;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,11 +23,13 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     private MainActivityI callbackInterface;
     private Location location = null;
     private Object syncToken;
+    private int requestTimeout;
 
-    public GpsBench(Context context, MainActivityI callbackI, Object token) {
+    public GpsBench(MainActivityI callbackI, Object token, Context context, SharedPreferences prefs) {
         this.context = context;
         this.callbackInterface = callbackI;
         this.syncToken = token;
+        this.requestTimeout = prefs.getInt("gps_request_timeout", 30);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
 
             Log.i(TAG, "doInBackground: script started");
             // TODO: 28/07/16  marker
-            if (!locationResolver.getLocation(context, this, 30000)) // TODO: 28/07/16 prendere il timeout da settings
+            if (!locationResolver.getLocation(context, this, 1000 * this.requestTimeout))
                 Log.e(TAG, "doInBackground: error while requesting GPS position");
             Looper.loop();
         } catch (Exception e) {

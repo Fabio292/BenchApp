@@ -1,5 +1,6 @@
 package fabiogentile.benchapp.StressTask;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -11,9 +12,13 @@ import fabiogentile.benchapp.CallbackInterfaces.LcdActivityI;
 public class LcdBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "LcdBench";
     private LcdActivityI listener;
+    private int stepDuration;
+    private int increment;
 
-    public LcdBench(LcdActivityI listener) {
+    public LcdBench(LcdActivityI listener, SharedPreferences prefs) {
         this.listener = listener;
+        this.stepDuration = prefs.getInt("lcd_step_duration", 2000);
+        this.increment = prefs.getInt("lcd_step_increment", 5);
     }
 
     @Override
@@ -24,8 +29,12 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
 
             Log.i(TAG, "doInBackground: launch script");
             // TODO: 28/07/16 marker
+
             //USAGE: STEP_DURATION (in ms) VALUE_INCREMENT(0-255)
-            Process process = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/lcd_test.sh"); // TODO: 28/07/16 valori from settings
+            String cmd = "su -c sh /sdcard/BENCHMARK/lcd_test.sh "
+                    + this.stepDuration + " "
+                    + this.increment;
+            Process process = Runtime.getRuntime().exec(cmd);
             process.waitFor();
             Log.i(TAG, "doInBackground: script terminated");
 
