@@ -10,9 +10,6 @@ import java.io.IOException;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 
-/**
- * Created by Fabio Gentile on 27/07/16.
- */
 public class AudioBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "CpuBench";
     private MainActivityI listener;
@@ -39,6 +36,7 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
         }
 
         Log.i(TAG, "doInBackground: launch script");
+        // TODO: 28/07/16  marker
         for (String fname : audioFiles) {
             playAudio(fname, 2000, 1000); // TODO: 27/07/16 leggere i numeri da impostazioni
         }

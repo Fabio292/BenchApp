@@ -21,20 +21,32 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     private Context context;
     private MainActivityI callbackInterface;
     private Location location = null;
+    private Object syncToken;
 
-    public GpsBench(Context context, MainActivityI callbackI) {
+    public GpsBench(Context context, MainActivityI callbackI, Object token) {
         this.context = context;
-        callbackInterface = callbackI;
+        this.callbackInterface = callbackI;
+        this.syncToken = token;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         try {
+            //Wait for screen to turn off
+            if (syncToken != null)
+                synchronized (syncToken) {
+                    try {
+                        syncToken.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
 
             Looper.prepare();
             LocationResolver locationResolver = new LocationResolver();
 
             Log.i(TAG, "doInBackground: script started");
+            // TODO: 28/07/16  marker
             if (!locationResolver.getLocation(context, this, 30000)) // TODO: 28/07/16 prendere il timeout da settings
                 Log.e(TAG, "doInBackground: error while requesting GPS position");
             Looper.loop();

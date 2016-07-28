@@ -9,18 +9,18 @@ import java.io.IOException;
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 
 
-public class WiFiBench extends AsyncTask<Void, Void, Void> {
-    private final String TAG = "WiFiBench";
+public class SocketBench extends AsyncTask<String, Void, Void> {
+    private final String TAG = "SocketBench";
     private MainActivityI listener;
     private Object syncToken;
 
-    public WiFiBench(MainActivityI listener, Object token) {
+    public SocketBench(MainActivityI listener, Object token) {
         this.listener = listener;
         this.syncToken = token;
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected Void doInBackground(String... params) {
         try {
             //Wait for screen to turn off
             synchronized (syncToken) {
@@ -31,22 +31,20 @@ public class WiFiBench extends AsyncTask<Void, Void, Void> {
                 }
             }
 
-            Log.i(TAG, "doInBackground: start script");
+            String netInterface = params[0];
+            Log.i(TAG, "doInBackground: start script on " + netInterface);
+            // TODO: 28/07/16 marker
 
             Process su = Runtime.getRuntime().exec("su");
             DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
-//            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(su.getInputStream()));
 
-            //USAGE: IP PORT START_RATE END_RATE PACKET_PER_RATE PAYLOAD_SIZE
-            outputStream.writeBytes("/system/xbin/SocketBench 192.168.1.20 29000 10 20 10 20 2>&1 >> /sdcard/BENCHMARK/output\n");
+            //USAGE: IP PORT START_RATE END_RATE PACKET_PER_RATE PAYLOAD_SIZE INTERFACE
+            outputStream.writeBytes("/system/xbin/SocketBench 192.168.1.20 29000 10 20 10 20 " + netInterface
+                    + " 2>&1 >> /sdcard/BENCHMARK/wifi_output\n");
             outputStream.flush();
             outputStream.writeBytes("exit\n");
             outputStream.flush();
 
-//            String line;
-//            while ((line = bufferedReader.readLine()) != null) {
-//                Log.i(TAG, "doInBackground: " + line);
-//            }
             su.waitFor();
             Log.i(TAG, "doInBackground: script ended");
 

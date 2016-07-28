@@ -31,9 +31,9 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
             }
 
 
-            // TODO: 22/07/16 Insert marker
 
             Log.i(TAG, "doInBackground: start script");
+            // TODO: 22/07/16 Insert marker
             //USAGE: duration for each frequency (seconds)
             Process su = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/cpu_test.sh 1 >  /sdcard/BENCHMARK/result");
             su.waitFor();

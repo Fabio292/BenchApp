@@ -25,7 +25,7 @@ import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
 import fabiogentile.benchapp.StressTask.GpsBench;
-import fabiogentile.benchapp.StressTask.WiFiBench;
+import fabiogentile.benchapp.StressTask.SocketBench;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
 import fabiogentile.benchapp.Util.SimpleNotification;
@@ -141,24 +141,28 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_wifi:
                 Log.i(TAG, "onClick: WIFI");
-                // TODO: 27/07/16 check interface name
-                new WiFiBench(this, syncToken).execute();
+                // TODO: 27/07/16 check connectivity + interface name?
+                new SocketBench(this, syncToken).execute("wlan0");
                 lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_3g:
                 Log.i(TAG, "onClick: 3G");
-                // TODO: 27/07/16 CHECK connectivity + interface name
-
                 try {
+                    Log.i(TAG, "Interface List:");
                     for (Enumeration<NetworkInterface> list = NetworkInterface.getNetworkInterfaces(); list.hasMoreElements(); ) {
                         NetworkInterface i = list.nextElement();
-                        Log.e("network_interfaces", "display name " + i.getDisplayName());
+                        if (i.isUp() && !i.isLoopback())
+                            Log.i(TAG, i.getDisplayName());
                     }
                 } catch (SocketException e) {
                     e.printStackTrace();
                 }
-                
+
+                // TODO: 27/07/16 CHECK connectivity + interface name?
+                new SocketBench(this, syncToken).execute("rmnet0");
+                lcdManager.turnScreenOff();
+
                 break;
 
             case R.id.btn_lcd:
@@ -169,10 +173,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
             case R.id.btn_gps:
                 Log.i(TAG, "onClick: GPS");
-                // TODO: 28/07/16 gestire monitor spento
-                //lcdManager.turnScreenOff();
+                new GpsBench(getApplicationContext(), this, syncToken).execute();
                 gpsRequestNumber = 1;
-                new GpsBench(getApplicationContext(), this).execute();
+                lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_audio:
@@ -180,8 +183,6 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 volumeManager.setVolume(volumeManager.getMax());
                 new AudioBench(this, getApplicationContext(), syncToken).execute();
                 lcdManager.turnScreenOff();
-
-                volumeManager.restoreVolume();
                 break;
 
             default:
@@ -201,7 +202,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             // TODO: 27/07/16 recupero numero richieste dai parametri
             if (gpsRequestNumber <= 3) {
 
-                new GpsBench(getApplicationContext(), this).execute();
+                new GpsBench(getApplicationContext(), this, null).execute();
             } else {
                 simpleNotificationManager.notify("GPS", "Gps task completed");
             }
@@ -219,6 +220,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     public void AudioTaskCompleted() {
         Log.i(TAG, "AudioTaskCompleted: audio completed");
         simpleNotificationManager.notify("Audio", "Audio task completed");
+        volumeManager.restoreVolume();
     }
 
     @Override
