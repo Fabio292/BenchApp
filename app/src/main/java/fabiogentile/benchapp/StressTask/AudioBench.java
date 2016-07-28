@@ -25,8 +25,8 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
         this.listener = listener;
         this.context = context;
         this.syncToken = token;
-        this.playDuration = prefs.getInt("audio_play_duration", 5);
-        this.silenceDuration = prefs.getInt("audio_pause_duration", 2);
+        this.playDuration = Integer.parseInt(prefs.getString("audio_play_duration", "5"));
+        this.silenceDuration = Integer.parseInt(prefs.getString("audio_pause_duration", "2"));
     }
 
     @Override

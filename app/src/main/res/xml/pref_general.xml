@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <fabiogentile.benchapp.Util.IntEditTextPreference
+    <EditTextPreference
         android:defaultValue="@string/default_general_marker_duration_high"
         android:inputType="number"
         android:key="general_marker_duration_high"
         android:title="Duration of HIGH state in marker (in ms)" />
 
-    <fabiogentile.benchapp.Util.IntEditTextPreference
+    <EditTextPreference
         android:defaultValue="@string/default_general_marker_duration_low"
         android:inputType="number"
         android:key="general_marker_duration_low"

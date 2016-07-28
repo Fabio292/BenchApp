@@ -28,19 +28,19 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
 
         if (type == SocketTypeEnum.WIFI) {
             this.serverIp = prefs.getString("wifi_ip_address", "127.0.0.1");
-            this.serverPort = prefs.getInt("wifi_server_port", 29000);
-            this.startRate = prefs.getInt("wifi_start_rate", 5);
-            this.endRate = prefs.getInt("wifi_end_rate", 20);
-            this.packetPerRate = prefs.getInt("wifi_packet_per_rate", 10);
-            this.payloadSize = prefs.getInt("wifi_payload_size", 256);
+            this.serverPort = Integer.parseInt(prefs.getString("wifi_server_port", "29000"));
+            this.startRate = Integer.parseInt(prefs.getString("wifi_start_rate", "5"));
+            this.endRate = Integer.parseInt(prefs.getString("wifi_end_rate", "20"));
+            this.packetPerRate = Integer.parseInt(prefs.getString("wifi_packet_per_rate", "10"));
+            this.payloadSize = Integer.parseInt(prefs.getString("wifi_payload_size", "256"));
 
         } else {
             this.serverIp = prefs.getString("threeG_ip_address", "127.0.0.1");
-            this.serverPort = prefs.getInt("threeG_server_port", 8080);
-            this.startRate = prefs.getInt("threeG_start_rate", 5);
-            this.endRate = prefs.getInt("threeG_end_rate", 10);
-            this.packetPerRate = prefs.getInt("threeG_packet_per_rate", 10);
-            this.payloadSize = prefs.getInt("threeG_payload_size", 256);
+            this.serverPort = Integer.parseInt(prefs.getString("threeG_server_port", "8080"));
+            this.startRate = Integer.parseInt(prefs.getString("threeG_start_rate", "5"));
+            this.endRate = Integer.parseInt(prefs.getString("threeG_end_rate", "10"));
+            this.packetPerRate = Integer.parseInt(prefs.getString("threeG_packet_per_rate", "10"));
+            this.payloadSize = Integer.parseInt(prefs.getString("threeG_payload_size", "256"));
         }
     }
 

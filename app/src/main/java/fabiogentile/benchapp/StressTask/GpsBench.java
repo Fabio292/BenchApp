@@ -29,7 +29,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
         this.context = context;
         this.callbackInterface = callbackI;
         this.syncToken = token;
-        this.requestTimeout = prefs.getInt("gps_request_timeout", 30);
+        this.requestTimeout = Integer.parseInt(prefs.getString("gps_request_timeout", "30"));
     }
 
     @Override

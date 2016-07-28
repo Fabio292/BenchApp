@@ -198,7 +198,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                     + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-            if (gpsRequestNumber <= prefs.getInt("gps_requests_number", 4)) {
+            if (gpsRequestNumber <= Integer.parseInt(prefs.getString("gps_requests_number", "4"))) {
                 new GpsBench(this, null, getApplicationContext(), prefs).execute();
             } else {
                 simpleNotificationManager.notify("GPS", "Gps task completed");

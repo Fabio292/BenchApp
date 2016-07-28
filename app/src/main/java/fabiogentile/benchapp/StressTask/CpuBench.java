@@ -18,7 +18,7 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
     public CpuBench(MainActivityI listener, Object token, SharedPreferences pref) {
         this.listener = listener;
         this.syncToken = token;
-        this.frequencyDuration = pref.getInt("cpu_state_duration", 5);
+        this.frequencyDuration = Integer.parseInt(pref.getString("cpu_state_duration", "5"));
     }
 
     @Override
