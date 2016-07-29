@@ -24,6 +24,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     private Location location = null;
     private Object syncToken;
     private int requestTimeout;
+    private Looper loop;
 
     public GpsBench(MainActivityI callbackI, Object token, Context context, SharedPreferences prefs) {
         this.context = context;
@@ -52,6 +53,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
             // TODO: 28/07/16  marker
             if (!locationResolver.getLocation(context, this, 1000 * this.requestTimeout))
                 Log.e(TAG, "doInBackground: error while requesting GPS position");
+            this.loop = Looper.myLooper();
             Looper.loop();
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,8 +84,10 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     public void timeoutOccurred(Location location) {
         this.location = location;
         Log.i(TAG, "timeoutOccurred");
-
-        Looper.myLooper().quit();
+        if(Looper.myLooper() != null)
+            Looper.myLooper().quit();
+        else
+            this.loop.quit();
     }
 }
 
@@ -157,7 +161,6 @@ class LocationResolver {
         @Override
         public void run() {
             try {
-
                 locationManager.removeUpdates(locationListenerGps);
 
                 Location gpsLocation = null;
@@ -167,7 +170,10 @@ class LocationResolver {
                 locationCallbackInterface.timeoutOccurred(gpsLocation);
             } catch (SecurityException e) {
                 e.printStackTrace();
+            } catch (Exception e ){
+                e.printStackTrace();
             }
+
         }
     }
 }

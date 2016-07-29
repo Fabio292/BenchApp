@@ -398,6 +398,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
 
             bindPreferenceSummaryToValue(findPreference("general_marker_duration_high"));
             bindPreferenceSummaryToValue(findPreference("general_marker_duration_low"));
+            // TODO: 29/07/16 aggiungere booleano per spegnimiento monitor ad inizio test
         }
 
         @Override

@@ -17,8 +17,8 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
 
     public LcdBench(LcdActivityI listener, SharedPreferences prefs) {
         this.listener = listener;
-        this.stepDuration = prefs.getInt("lcd_step_duration", 2000);
-        this.increment = prefs.getInt("lcd_step_increment", 5);
+        this.stepDuration = Integer.parseInt(prefs.getString("lcd_step_duration", "2000"));
+        this.increment = Integer.parseInt(prefs.getString("lcd_step_increment", "5"));
     }
 
     @Override
