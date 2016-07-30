@@ -1,15 +1,22 @@
 package fabiogentile.benchapp;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -33,7 +40,8 @@ import fabiogentile.benchapp.Util.SocketTypeEnum;
 import fabiogentile.benchapp.Util.VolumeManager;
 
 
-public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI {
+public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI, ActivityCompat.OnRequestPermissionsResultCallback {
+    private static final int REQUEST_ACCESS_LOCATION = 5;
     private final String TAG = "BenchMain";
     Object syncToken = new Object();
     private int gpsRequestNumber;
@@ -42,10 +50,16 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
     private VolumeManager volumeManager = VolumeManager.getInstance();
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bench_main);
+
+        if (Build.VERSION.SDK_INT > 22) {
+            askPermission();
+        }
 
         //<editor-fold desc="Utility class setup">
         simpleNotificationManager.setContext(this.getApplicationContext());
@@ -92,6 +106,48 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         //</editor-fold>
 
     }
+
+    /**
+     * Check if all permissions are granted or not
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private void askPermission(){
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_ACCESS_LOCATION);
+        }
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.INTERNET},
+                    3);
+        }
+
+
+        boolean canDo =  Settings.System.canWrite(this);
+        if(!canDo){
+            Intent grantIntent = new   Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+            startActivity(grantIntent);
+        }
+
+
+    }
+
+
+    private void requestPermission(String permissionName, int permissionRequestCode) {
+        ActivityCompat.requestPermissions(this,
+                new String[]{permissionName}, permissionRequestCode);
+    }
+
+
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        for (int i = 0; i < permissions.length; i++) {
+            Log.i(TAG, "onRequestPermissionsResult: " + permissions[i] + "=" + grantResults[i]);
+        }
+    }
+
 
     //<editor-fold desc="TOOLBAR management">
     @Override
