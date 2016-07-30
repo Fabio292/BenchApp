@@ -5,9 +5,14 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.view.Window;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class LcdManager {
     private static LcdManager ourInstance = new LcdManager();
     private static int currentTimeout = 0;
+    private static int currentLuminosity = 1;
     private static ContentResolver content = null;
 
     private LcdManager() {
@@ -19,6 +24,54 @@ public class LcdManager {
 
     public void setContentResolver(ContentResolver content) {
         LcdManager.content = content;
+    }
+
+    /**
+     * return current luminosity value
+     *
+     * @return 0-255 value of current luminosity
+     */
+    public int getLuminosity() {
+        int ret = 1;
+        String cmd = "cat /sys/class/leds/lcd-backlight/brightness";
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(cmd);
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            ret = Integer.parseInt(bufferedReader.readLine());
+
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    /**
+     * Set luminosity of screen
+     *
+     * @param val 0-255 value
+     */
+    public void setLuminosity(int val) {
+        String cmd = "su -c echo " + val + " > /sys/class/leds/lcd-backlight/brightness";
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(cmd);
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveLuminosity() {
+        currentLuminosity = getLuminosity();
+    }
+
+    public void restoreLuminosity() {
+        setLuminosity(currentLuminosity);
     }
 
     public void saveLcdTimeout() {

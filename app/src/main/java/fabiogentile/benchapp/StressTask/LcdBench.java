@@ -4,7 +4,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import fabiogentile.benchapp.CallbackInterfaces.LcdActivityI;
 
@@ -35,8 +37,17 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
                     + this.stepDuration + " "
                     + this.increment;
             Process process = Runtime.getRuntime().exec(cmd);
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                Log.i(TAG, "doInBackground: " + line);
+            }
+
             process.waitFor();
             Log.i(TAG, "doInBackground: script terminated");
+            Thread.sleep(1000);
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
