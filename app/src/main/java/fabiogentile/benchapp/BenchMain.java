@@ -247,18 +247,18 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     //<editor-fold desc="TASK COMPLETION callback">
     @Override
     public void GpsTaskCompleted(Location location) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (location != null) {
             Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
                     + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-            if (gpsRequestNumber <= Integer.parseInt(prefs.getString("gps_requests_number", "4"))) {
-                new GpsBench(this, null, getApplicationContext(), prefs).execute();
-            } else {
-                simpleNotificationManager.notify("GPS", "Gps task completed");
-            }
         } else
             Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");
+
+        if (gpsRequestNumber <= Integer.parseInt(prefs.getString("gps_requests_number", "4"))) {
+            new GpsBench(this, null, getApplicationContext(), prefs).execute();
+        } else {
+            simpleNotificationManager.notify("GPS", "Gps task completed");
+        }
     }
 
     @Override
