@@ -13,4 +13,8 @@
         android:key="general_marker_duration_low"
         android:title="Duration of LOW state in marker (in ms)" />
 
+    <SwitchPreference
+        android:key="general_turn_off_monitor"
+        android:title="Turn off monitor before bench" />
+
 </PreferenceScreen>

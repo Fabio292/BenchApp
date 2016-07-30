@@ -16,6 +16,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.preference.SwitchPreference;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
@@ -87,45 +88,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
                 preference.setSummary(stringValue);
+
             }
             return true;
         }
-
-
-//            String stringValue = value.toString();
-//
-////            if (preference instanceof ListPreference) {
-////                // For list preferences, look up the correct display value in
-////                // the preference's 'entries' list.
-////                ListPreference listPreference = (ListPreference) preference;
-////                int index = listPreference.findIndexOfValue(stringValue);
-////
-////                // Set the summary to reflect the new value.
-////                preference.setSummary(
-////                        index >= 0
-////                                ? listPreference.getEntries()[index]
-////                                : null);
-////
-//////            } else if (preference instanceof IntEditTextPreference){
-//////                Log.i("we", "onPreferenceChange: !!");
-////            } else {
-//                // For all other preferences, set the summary to the value's
-//                // simple string representation.
-//            preference.setSummary(stringValue);
-//
-//            SharedPreferences.Editor e = preference.getEditor();
-//
-//            e.clear();
-//            if (preference instanceof IntEditTextPreference)
-//                e.putInt(preference.getKey(), Integer.parseInt(stringValue));
-//            else
-//                e.putString(preference.getKey(), stringValue);
-//            e.commit();
-//
-//            Log.i(TAG, "onPreferenceChange: " + preference.getTitle());
-//            Log.i(TAG, "onPreferenceChange: val=" + value);
-////            }
-//            return true;
 
     };
 
@@ -151,27 +117,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+        if (preference instanceof SwitchPreference) {
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
+                        .getBoolean(preference.getKey(), true));
 
-//        // Set the listener to watch for value changes.
-//        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-//
-//        String key = preference.getKey();
-//
-//        if (preference instanceof IntEditTextPreference) {
-//            String val = preference.getSummary().toString();
-//            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-//                    Integer.parseInt(val));
-//        } else {
-//            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-//                    PreferenceManager.getDefaultSharedPreferences(preference.getContext())
-//                            .getString(key, ""));
-//        }
+        } else {
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(preference.getContext())
+                        .getString(preference.getKey(), ""));
+        }
+
     }
 
     @Override
@@ -398,7 +356,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
 
             bindPreferenceSummaryToValue(findPreference("general_marker_duration_high"));
             bindPreferenceSummaryToValue(findPreference("general_marker_duration_low"));
-            // TODO: 29/07/16 aggiungere booleano per spegnimiento monitor ad inizio test
+            bindPreferenceSummaryToValue(findPreference("general_turn_off_monitor"));
         }
 
         @Override
