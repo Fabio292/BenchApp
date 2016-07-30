@@ -41,9 +41,11 @@ import fabiogentile.benchapp.Util.VolumeManager;
 
 
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI, ActivityCompat.OnRequestPermissionsResultCallback {
-    private static final int REQUEST_ACCESS_LOCATION = 5;
+    private static final int REQUEST_ACCESS_LOCATION = 1;
+    private static final int REQUEST_INTERNET = 2;
     private final String TAG = "BenchMain";
     Object syncToken = new Object();
+    private boolean turnOffLcd = true;
     private int gpsRequestNumber;
     private BroadcastReceiver mReceiver = null;
     private LcdManager lcdManager = LcdManager.getInstance();
@@ -57,9 +59,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bench_main);
 
-        if (Build.VERSION.SDK_INT > 22) {
+        if (Build.VERSION.SDK_INT > 22)
             askPermission();
-        }
 
         //<editor-fold desc="Utility class setup">
         simpleNotificationManager.setContext(this.getApplicationContext());
@@ -71,8 +72,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
         volumeManager.saveVolume();
-
         //</editor-fold>
+
+        turnOffLcd = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean("general_turn_off_monitor", true);
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -107,32 +110,23 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
     }
 
+    //<editor-fold desc="PERMISSION">
     /**
      * Check if all permissions are granted or not
      */
     @TargetApi(Build.VERSION_CODES.M)
     private void askPermission(){
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_ACCESS_LOCATION);
-        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            requestPermission(Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_ACCESS_LOCATION);
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.INTERNET},
-                    3);
-        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+            requestPermission(Manifest.permission.INTERNET, REQUEST_INTERNET);
 
-
-        boolean canDo =  Settings.System.canWrite(this);
-        if(!canDo){
+        if (!Settings.System.canWrite(this)) {
             Intent grantIntent = new   Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
             startActivity(grantIntent);
         }
-
-
     }
 
 
@@ -147,7 +141,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             Log.i(TAG, "onRequestPermissionsResult: " + permissions[i] + "=" + grantResults[i]);
         }
     }
-
+    //</editor-fold>
 
     //<editor-fold desc="TOOLBAR management">
     @Override
@@ -163,7 +157,6 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Log.i(TAG, "onOptionsItemSelected: Settings selected");
                 Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
                 startActivity(i);
                 return true;
@@ -193,14 +186,16 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             case R.id.btn_cpu:
                 Log.i(TAG, "onClick: CPU");
                 new CpuBench(this, syncToken, prefs).execute();
-                lcdManager.turnScreenOff();
+                if (this.turnOffLcd)
+                    lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_wifi:
                 Log.i(TAG, "onClick: WIFI");
                 // TODO: 27/07/16 check connectivity + interface name?
                 new SocketBench(this, syncToken, prefs, SocketTypeEnum.WIFI).execute("wlan0");
-                lcdManager.turnScreenOff();
+                if (this.turnOffLcd)
+                    lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_3g:
@@ -215,7 +210,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 }
 
                 //new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");
-                //lcdManager.turnScreenOff();
+//                if(this.turnOffLcd)
+//                    lcdManager.turnScreenOff();
 
                 break;
 
@@ -229,14 +225,16 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 Log.i(TAG, "onClick: GPS");
                 new GpsBench(this, syncToken, getApplicationContext(), prefs).execute();
                 gpsRequestNumber = 1;
-                lcdManager.turnScreenOff();
+                if (this.turnOffLcd)
+                    lcdManager.turnScreenOff();
                 break;
 
             case R.id.btn_audio:
                 Log.i(TAG, "onClick: AUDIO");
                 volumeManager.setVolume(volumeManager.getMax());
                 new AudioBench(this, getApplicationContext(), syncToken, prefs).execute();
-                lcdManager.turnScreenOff();
+                if (this.turnOffLcd)
+                    lcdManager.turnScreenOff();
                 break;
 
             default:

@@ -18,6 +18,7 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
     private Object syncToken;
     private int playDuration;
     private int silenceDuration;
+    private boolean waitLcdOff = true;
     private String[] audioFiles = {"Tone - ogg.ogg", "Tone - vbr.mp3", "Tone - wav.wav",
             "Tone - 32.mp3", "Tone - 128.mp3", "Tone - 192.mp3", "Tone - 320.mp3"};
 
@@ -27,18 +28,20 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
         this.syncToken = token;
         this.playDuration = Integer.parseInt(prefs.getString("audio_play_duration", "5"));
         this.silenceDuration = Integer.parseInt(prefs.getString("audio_pause_duration", "2"));
+        this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         //Wait for screen to turn off
-        synchronized (syncToken) {
-            try {
-                syncToken.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        if (syncToken != null && waitLcdOff)
+            synchronized (syncToken) {
+                try {
+                    syncToken.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        }
 
         Log.i(TAG, "doInBackground: launch script");
         // TODO: 28/07/16  marker

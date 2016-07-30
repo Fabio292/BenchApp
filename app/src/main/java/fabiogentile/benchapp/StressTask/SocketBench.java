@@ -21,6 +21,7 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
     private int endRate;
     private int packetPerRate;
     private int payloadSize;
+    private boolean waitLcdOff = true;
 
     public SocketBench(MainActivityI listener, Object token, SharedPreferences prefs, SocketTypeEnum type) {
         this.listener = listener;
@@ -42,19 +43,22 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
             this.packetPerRate = Integer.parseInt(prefs.getString("threeG_packet_per_rate", "10"));
             this.payloadSize = Integer.parseInt(prefs.getString("threeG_payload_size", "256"));
         }
+
+        this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
     }
 
     @Override
     protected Void doInBackground(String... params) {
         try {
             //Wait for screen to turn off
-            synchronized (syncToken) {
-                try {
-                    syncToken.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            if (syncToken != null && waitLcdOff)
+                synchronized (syncToken) {
+                    try {
+                        syncToken.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
 
             String netInterface = params[0];
             Log.i(TAG, "doInBackground: start script on " + netInterface);

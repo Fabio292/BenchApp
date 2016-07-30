@@ -12,26 +12,29 @@ import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 public class CpuBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "CpuBench";
     public int frequencyDuration;
+    private boolean waitLcdOff = true;
     private MainActivityI listener;
     private Object syncToken;
 
-    public CpuBench(MainActivityI listener, Object token, SharedPreferences pref) {
+    public CpuBench(MainActivityI listener, Object token, SharedPreferences prefs) {
         this.listener = listener;
         this.syncToken = token;
-        this.frequencyDuration = Integer.parseInt(pref.getString("cpu_state_duration", "5"));
+        this.frequencyDuration = Integer.parseInt(prefs.getString("cpu_state_duration", "5"));
+        this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         try {
             //Wait for screen to turn off
-            synchronized (syncToken) {
-                try {
-                    syncToken.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            if (syncToken != null && waitLcdOff)
+                synchronized (syncToken) {
+                    try {
+                        syncToken.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
 
             Log.i(TAG, "doInBackground: start script");
             // TODO: 22/07/16 Insert marker

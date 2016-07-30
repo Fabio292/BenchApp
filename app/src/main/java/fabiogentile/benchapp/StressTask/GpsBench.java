@@ -24,6 +24,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     private Location location = null;
     private Object syncToken;
     private int requestTimeout;
+    private boolean waitLcdOff = true;
     private Looper loop;
 
     public GpsBench(MainActivityI callbackI, Object token, Context context, SharedPreferences prefs) {
@@ -31,13 +32,14 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
         this.callbackInterface = callbackI;
         this.syncToken = token;
         this.requestTimeout = Integer.parseInt(prefs.getString("gps_request_timeout", "30"));
+        this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         try {
             //Wait for screen to turn off
-            if (syncToken != null)
+            if (syncToken != null && waitLcdOff)
                 synchronized (syncToken) {
                     try {
                         syncToken.wait();
