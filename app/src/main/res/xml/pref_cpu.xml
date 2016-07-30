@@ -5,6 +5,7 @@
         android:defaultValue="@string/default_cpu_state_duration"
         android:inputType="number"
         android:key="cpu_state_duration"
+        android:selectAllOnFocus="true"
         android:title="Cpu cycle duration (seconds)" />
 
 </PreferenceScreen>

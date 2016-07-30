@@ -5,12 +5,14 @@
         android:defaultValue="@string/default_general_marker_duration_high"
         android:inputType="number"
         android:key="general_marker_duration_high"
+        android:selectAllOnFocus="true"
         android:title="Duration of HIGH state in marker (in ms)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_general_marker_duration_low"
         android:inputType="number"
         android:key="general_marker_duration_low"
+        android:selectAllOnFocus="true"
         android:title="Duration of LOW state in marker (in ms)" />
 
     <SwitchPreference

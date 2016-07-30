@@ -5,12 +5,14 @@
         android:defaultValue="@string/default_audio_play_duration"
         android:inputType="number"
         android:key="audio_play_duration"
+        android:selectAllOnFocus="true"
         android:title="Duration of each file (in seconds)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_audio_pause_duration"
         android:inputType="number"
         android:key="audio_pause_duration"
+        android:selectAllOnFocus="true"
         android:title="Pause between each file (in seconds)" />
 
 </PreferenceScreen>

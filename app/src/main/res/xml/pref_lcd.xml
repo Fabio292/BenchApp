@@ -4,12 +4,14 @@
         android:defaultValue="@string/default_lcd_step_duration"
         android:inputType="number"
         android:key="lcd_step_duration"
+        android:selectAllOnFocus="true"
         android:title="Duration of luminosity step (in ms)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_lcd_step_increment"
         android:inputType="number"
         android:key="lcd_step_increment"
+        android:selectAllOnFocus="true"
         android:title="Luminosity increment for each step (0-255)" />
 
 </PreferenceScreen>

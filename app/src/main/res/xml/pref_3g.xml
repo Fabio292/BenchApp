@@ -4,36 +4,42 @@
         android:defaultValue="@string/default_threeG_ip_address"
         android:inputType="text"
         android:key="threeG_ip_address"
+        android:selectAllOnFocus="true"
         android:title="Server IP address" />
 
     <EditTextPreference
         android:defaultValue="@string/default_threeG_port"
         android:inputType="number"
         android:key="threeG_server_port"
+        android:selectAllOnFocus="true"
         android:title="Server Port" />
 
     <EditTextPreference
         android:defaultValue="@string/default_threeG_start_rate"
         android:inputType="number"
         android:key="threeG_start_rate"
+        android:selectAllOnFocus="true"
         android:title="Start packet rate (pkt/s)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_threeG_end_rate"
         android:inputType="number"
         android:key="threeG_end_rate"
+        android:selectAllOnFocus="true"
         android:title="End packet rate (pkt/s)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_threeG_packet_per_rate"
         android:inputType="number"
         android:key="threeG_packet_per_rate"
+        android:selectAllOnFocus="true"
         android:title="Number of packet per rate" />
 
     <EditTextPreference
         android:defaultValue="@string/default_threeG_payload_size"
         android:inputType="number"
         android:key="threeG_payload_size"
+        android:selectAllOnFocus="true"
         android:title="payload size (bytes)" />
 
 </PreferenceScreen>

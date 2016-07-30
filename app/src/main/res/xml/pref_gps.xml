@@ -5,12 +5,14 @@
         android:defaultValue="@string/default_gps_requests_number"
         android:inputType="number"
         android:key="gps_requests_number"
+        android:selectAllOnFocus="true"
         android:title="Number of gps location requests" />
 
     <EditTextPreference
         android:defaultValue="@string/default_gps_request_timeout"
         android:inputType="number"
         android:key="gps_request_timeout"
+        android:selectAllOnFocus="true"
         android:title="Timeout fo reach gps request (in seconds)" />
 
 </PreferenceScreen>

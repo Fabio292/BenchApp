@@ -4,6 +4,7 @@
         android:defaultValue="@string/default_wifi_ip_address"
         android:inputType="text"
         android:key="wifi_ip_address"
+        android:selectAllOnFocus="true"
         android:summary="@string/default_wifi_ip_address"
         android:title="Server IP address" />
 
@@ -11,6 +12,7 @@
         android:defaultValue="@string/default_wifi_port"
         android:inputType="number"
         android:key="wifi_server_port"
+        android:selectAllOnFocus="true"
         android:summary="@string/default_wifi_port"
         android:title="Server Port" />
 
@@ -18,6 +20,7 @@
         android:defaultValue="@string/default_wifi_start_rate"
         android:inputType="number"
         android:key="wifi_start_rate"
+        android:selectAllOnFocus="true"
         android:summary="@string/default_wifi_start_rate"
         android:title="Start packet rate (pkt/s)" />
 
@@ -25,6 +28,7 @@
         android:defaultValue="@string/default_wifi_end_rate"
         android:inputType="number"
         android:key="wifi_end_rate"
+        android:selectAllOnFocus="true"
         android:summary="@string/default_wifi_end_rate"
         android:title="End packet rate (pkt/s)" />
 
@@ -32,6 +36,7 @@
         android:defaultValue="@string/default_wifi_packet_per_rate"
         android:inputType="number"
         android:key="wifi_packet_per_rate"
+        android:selectAllOnFocus="true"
         android:summary="@string/default_wifi_packet_per_rate"
         android:title="Number of packet per rate" />
 
@@ -39,6 +44,7 @@
         android:defaultValue="@string/default_wifi_payload_size"
         android:inputType="number"
         android:key="wifi_payload_size"
+        android:selectAllOnFocus="true"
         android:summary="@string/default_wifi_payload_size"
         android:title="payload size (bytes)" />
 
