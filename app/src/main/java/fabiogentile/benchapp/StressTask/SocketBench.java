@@ -4,8 +4,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 import fabiogentile.benchapp.Util.SocketTypeEnum;
@@ -64,25 +65,24 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
             Log.i(TAG, "doInBackground: start script on " + netInterface);
             // TODO: 28/07/16 marker
 
-            Process su = Runtime.getRuntime().exec("su");
-            DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
-
             //USAGE: IP PORT START_RATE END_RATE PACKET_PER_RATE PAYLOAD_SIZE INTERFACE
-            String cmd = "/system/xbin/SocketBench "
+            String cmd = "su -c /system/xbin/SocketBench "
                     + this.serverIp + " "
                     + this.serverPort + " "
                     + this.startRate + " "
                     + this.endRate + " "
                     + this.packetPerRate + " "
                     + this.payloadSize + " "
-                    + netInterface + " "
-                    + "2>&1 >> /sdcard/BENCHMARK/wifi_output\n";
+                    + netInterface;
             Log.i(TAG, "doInBackground: " + cmd);
-            outputStream.writeBytes(cmd);
+            Process su = Runtime.getRuntime().exec(cmd);
 
-            outputStream.flush();
-            outputStream.writeBytes("exit\n");
-            outputStream.flush();
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(su.getInputStream()));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                Log.i(TAG, "doInBackground: " + line);
+            }
 
             su.waitFor();
             Log.i(TAG, "doInBackground: script ended");
