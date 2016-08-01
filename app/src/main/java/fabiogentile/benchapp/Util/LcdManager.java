@@ -2,7 +2,9 @@ package fabiogentile.benchapp.Util;
 
 
 import android.content.ContentResolver;
+import android.os.PowerManager;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Window;
 
 import java.io.BufferedReader;
@@ -10,10 +12,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class LcdManager {
+    private static final String TAG = "LcdManager";
     private static LcdManager ourInstance = new LcdManager();
     private static int currentTimeout = 0;
     private static int currentLuminosity = 1;
     private static ContentResolver content = null;
+    private static PowerManager pm = null;
 
     private LcdManager() {
     }
@@ -26,6 +30,9 @@ public class LcdManager {
         LcdManager.content = content;
     }
 
+    public void setPowerManager(PowerManager pm) {
+        LcdManager.pm = pm;
+    }
     /**
      * return current luminosity value
      *
@@ -98,8 +105,8 @@ public class LcdManager {
     public void turnScreenOff() {
         saveLcdTimeout();
         //Set screen timeout at 10 milliseconds
-        Settings.System.putInt(content, Settings.System.SCREEN_OFF_TIMEOUT, 10);
-
+        Settings.System.putInt(content, Settings.System.SCREEN_OFF_TIMEOUT, 75);
+        Log.i(TAG, "turnScreenOff");
 
     }
 }

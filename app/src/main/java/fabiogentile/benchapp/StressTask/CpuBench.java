@@ -4,7 +4,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
 
@@ -39,8 +41,17 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
             Log.i(TAG, "doInBackground: start script");
             // TODO: 22/07/16 Insert marker
             //USAGE: duration for each frequency (seconds)
-            Process su = Runtime.getRuntime().exec("su -c sh /sdcard/BENCHMARK/cpu_test.sh " +
-                    this.frequencyDuration + " > /sdcard/BENCHMARK/cpu_output");
+            String cmd = "su -c sh /sdcard/BENCHMARK/cpu_test.sh " +
+                    this.frequencyDuration;
+            Process su = Runtime.getRuntime().exec(cmd);
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(su.getInputStream()));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                Log.i(TAG, "doInBackground: " + line);
+            }
+
             su.waitFor();
             Log.i(TAG, "doInBackground: script ended");
 

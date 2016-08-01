@@ -13,6 +13,7 @@ import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -43,6 +44,7 @@ import fabiogentile.benchapp.Util.VolumeManager;
 public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI, ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int REQUEST_ACCESS_LOCATION = 1;
     private static final int REQUEST_INTERNET = 2;
+    private static final int REQUEST_WAKELOCK = 3;
     private final String TAG = "BenchMain";
     Object syncToken = new Object();
     private boolean turnOffLcd = true;
@@ -68,6 +70,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
 
         lcdManager.setContentResolver(getContentResolver());
+        lcdManager.setPowerManager((PowerManager) getSystemService(Context.POWER_SERVICE));
         lcdManager.saveLcdTimeout();
 
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
@@ -122,6 +125,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
             requestPermission(Manifest.permission.INTERNET, REQUEST_INTERNET);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
+            requestPermission(Manifest.permission.WAKE_LOCK, REQUEST_WAKELOCK);
 
         if (!Settings.System.canWrite(this)) {
             Intent grantIntent = new   Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
@@ -203,11 +209,12 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 // TODO: 27/07/16 CHECK connectivity + interface name?
 
                 Map<String, ?> keys = prefs.getAll();
+                Log.i(TAG, "onClick: " + prefs.getBoolean("general_turn_off_monitor", true));
 
-                for (Map.Entry<String, ?> entry : keys.entrySet()) {
-                    Log.d("map values", entry.getKey() + ": " +
+/*                for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                    Log.i("map values", entry.getKey() + ": " +
                             entry.getValue().toString());
-                }
+                }*/
 
                 //new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");
 //                if(this.turnOffLcd)
