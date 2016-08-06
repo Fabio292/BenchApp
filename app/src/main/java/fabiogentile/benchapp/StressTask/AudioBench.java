@@ -10,6 +10,7 @@ import android.util.Log;
 import java.io.IOException;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
+import fabiogentile.benchapp.Util.CpuManager;
 
 public class AudioBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "CpuBench";
@@ -19,6 +20,7 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
     private int playDuration;
     private int silenceDuration;
     private boolean waitLcdOff = true;
+    private CpuManager cpuManager = CpuManager.getInstance();
     private String[] audioFiles = {"Tone - ogg.ogg", "Tone - vbr.mp3", "Tone - wav.wav",
             "Tone - 32.mp3", "Tone - 128.mp3", "Tone - 192.mp3", "Tone - 320.mp3"};
 
@@ -26,6 +28,8 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
         this.listener = listener;
         this.context = context;
         this.syncToken = token;
+
+        this.cpuManager.setPreferences(prefs);
         this.playDuration = Integer.parseInt(prefs.getString("audio_play_duration", "5"));
         this.silenceDuration = Integer.parseInt(prefs.getString("audio_pause_duration", "2"));
         this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
@@ -43,10 +47,12 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
                 }
             }
 
+
+        cpuManager.marker();
+
         Log.i(TAG, "doInBackground: launch script");
-        // TODO: 28/07/16  marker
         for (String fname : audioFiles) {
-            playAudio(fname, 1000 * this.playDuration, 1000 * this.silenceDuration); // TODO: 27/07/16 leggere i numeri da impostazioni
+            playAudio(fname, 0 * this.playDuration, 0 * this.silenceDuration); //TODO 1000
         }
         Log.i(TAG, "doInBackground: script ended");
 

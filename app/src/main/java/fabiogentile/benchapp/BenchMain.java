@@ -34,6 +34,7 @@ import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
 import fabiogentile.benchapp.StressTask.GpsBench;
 import fabiogentile.benchapp.StressTask.SocketBench;
+import fabiogentile.benchapp.Util.CpuManager;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
 import fabiogentile.benchapp.Util.SimpleNotification;
@@ -53,6 +54,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
     private VolumeManager volumeManager = VolumeManager.getInstance();
+    private CpuManager cpuManager = CpuManager.getInstance();
 
 
 
@@ -75,6 +77,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         volumeManager.setAudioManager((AudioManager) getSystemService(Context.AUDIO_SERVICE));
         volumeManager.saveVolume();
+
+        cpuManager.setPreferences(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        cpuManager.turnOffMPDecision();
+        cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.APP_NORMAL);
         //</editor-fold>
 
         turnOffLcd = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
@@ -181,6 +187,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             unregisterReceiver(mReceiver);
             mReceiver = null;
         }
+
+        cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.AUTO);
+        cpuManager.turnOnMPDecision();
         super.onDestroy();
     }
 

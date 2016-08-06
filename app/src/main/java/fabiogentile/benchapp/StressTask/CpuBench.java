@@ -38,11 +38,11 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
                     }
                 }
 
-            Log.i(TAG, "doInBackground: start script");
             // TODO: 22/07/16 Insert marker
             //USAGE: duration for each frequency (seconds)
             String cmd = "su -c sh /sdcard/BENCHMARK/cpu_test.sh " +
-                    this.frequencyDuration;
+                    this.frequencyDuration + " 2>&1";
+            Log.i(TAG, "doInBackground: start script " + cmd);
             Process su = Runtime.getRuntime().exec(cmd);
 
             BufferedReader bufferedReader = new BufferedReader(
