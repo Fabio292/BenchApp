@@ -35,7 +35,7 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
             this.serverPort = Integer.parseInt(prefs.getString("wifi_server_port", "29000"));
             this.startRate = Integer.parseInt(prefs.getString("wifi_start_rate", "5"));
             this.endRate = Integer.parseInt(prefs.getString("wifi_end_rate", "20"));
-            this.msPerRate = Integer.parseInt(prefs.getString("wifi_packet_per_rate", "10"));
+            this.msPerRate = Integer.parseInt(prefs.getString("wifi_ms_per_rate", "5000"));
             this.payloadSize = Integer.parseInt(prefs.getString("wifi_payload_size", "256"));
 
         } else {
@@ -43,7 +43,7 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
             this.serverPort = Integer.parseInt(prefs.getString("threeG_server_port", "8080"));
             this.startRate = Integer.parseInt(prefs.getString("threeG_start_rate", "5"));
             this.endRate = Integer.parseInt(prefs.getString("threeG_end_rate", "10"));
-            this.msPerRate = Integer.parseInt(prefs.getString("threeG_packet_per_rate", "10"));
+            this.msPerRate = Integer.parseInt(prefs.getString("threeG_ms_per_rate", "5000"));
             this.payloadSize = Integer.parseInt(prefs.getString("threeG_payload_size", "256"));
         }
 

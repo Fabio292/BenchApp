@@ -33,12 +33,12 @@
         android:title="End packet rate (pkt/s)" />
 
     <EditTextPreference
-        android:defaultValue="@string/default_wifi_packet_per_rate"
+        android:defaultValue="@string/default_wifi_ms_per_rate"
         android:inputType="number"
-        android:key="wifi_packet_per_rate"
+        android:key="wifi_ms_per_rate"
         android:selectAllOnFocus="true"
-        android:summary="@string/default_wifi_packet_per_rate"
-        android:title="Number of packet per rate" />
+        android:summary="@string/default_wifi_ms_per_rate"
+        android:title="Time for each rate (ms)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_wifi_payload_size"

@@ -235,7 +235,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
             bindPreferenceSummaryToValue(findPreference("wifi_server_port"));
             bindPreferenceSummaryToValue(findPreference("wifi_start_rate"));
             bindPreferenceSummaryToValue(findPreference("wifi_end_rate"));
-            bindPreferenceSummaryToValue(findPreference("wifi_packet_per_rate"));
+            bindPreferenceSummaryToValue(findPreference("wifi_ms_per_rate"));
             bindPreferenceSummaryToValue(findPreference("wifi_payload_size"));
         }
 
@@ -262,7 +262,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
             bindPreferenceSummaryToValue(findPreference("threeG_server_port"));
             bindPreferenceSummaryToValue(findPreference("threeG_start_rate"));
             bindPreferenceSummaryToValue(findPreference("threeG_end_rate"));
-            bindPreferenceSummaryToValue(findPreference("threeG_packet_per_rate"));
+            bindPreferenceSummaryToValue(findPreference("threeG_ms_per_rate"));
             bindPreferenceSummaryToValue(findPreference("threeG_payload_size"));
         }
 

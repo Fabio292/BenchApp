@@ -28,14 +28,14 @@
     <string name="default_wifi_port">29000</string>
     <string name="default_wifi_start_rate">5</string>
     <string name="default_wifi_end_rate">20</string>
-    <string name="default_wifi_packet_per_rate">10</string>
+    <string name="default_wifi_ms_per_rate">5000</string>
     <string name="default_wifi_payload_size">256</string>
 
     <string name="default_threeG_ip_address">127.0.0.1</string>
     <string name="default_threeG_port">8080</string>
     <string name="default_threeG_start_rate">5</string>
     <string name="default_threeG_end_rate">10</string>
-    <string name="default_threeG_packet_per_rate">10</string>
+    <string name="default_threeG_ms_per_rate">5000</string>
     <string name="default_threeG_payload_size">256</string>
 
     <string name="default_lcd_step_duration">2000</string>
