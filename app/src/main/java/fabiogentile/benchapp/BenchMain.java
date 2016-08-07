@@ -181,8 +181,11 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     }
     //</editor-fold>
 
+
     @Override
-    protected void onDestroy() {
+    protected void onStop() {
+        super.onStop();  // Always call the superclass method first
+
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
             mReceiver = null;
@@ -190,7 +193,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.AUTO);
         cpuManager.turnOnMPDecision();
-        super.onDestroy();
+
+        Log.i(TAG, "onStop: !!!!!!!!!");
     }
 
     @Override
@@ -220,9 +224,13 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 Map<String, ?> keys = prefs.getAll();
                 Log.i(TAG, "onClick: " + prefs.getBoolean("general_turn_off_monitor", true));
 
-                for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                /*for (Map.Entry<String, ?> entry : keys.entrySet()) {
                     Log.i("map values", entry.getKey() + ": " +
                             entry.getValue().toString());
+                }*/
+
+                for (int i = 0; i < 4; i++) {
+                    cpuManager.setGovernor(CpuManager.AVAILABLE_GOVERNORS.ONDEMAND, i);
                 }
 
                 //new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");

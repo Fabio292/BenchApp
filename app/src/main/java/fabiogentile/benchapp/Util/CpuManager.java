@@ -152,8 +152,6 @@ public class CpuManager {
                 DataOutputStream out = new DataOutputStream(process.getOutputStream());
 
                 out.writeBytes("echo " + governors[gov.ordinal()] + " > " + BASE_CPU_DIR + "/cpu" + index + "/cpufreq/scaling_governor\n");
-                //Set min frequency
-                out.writeBytes("echo " + frequencies[0] + " > " + BASE_CPU_DIR + "/cpu" + index + "/scaling_min_freq\n");
 
                 out.writeBytes("exit\n");
                 out.flush();
