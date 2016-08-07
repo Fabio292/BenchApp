@@ -83,9 +83,6 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.APP_NORMAL);
         //</editor-fold>
 
-        turnOffLcd = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean("general_turn_off_monitor", true);
-
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
@@ -180,11 +177,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         }
     }
     //</editor-fold>
-
-
     @Override
-    protected void onStop() {
-        super.onStop();  // Always call the superclass method first
+    protected void onDestroy() {
+        super.onDestroy();  // Always call the superclass method first
+        Log.i(TAG, "onDestroy: ");
 
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
@@ -193,13 +189,34 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
 
         cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.AUTO);
         cpuManager.turnOnMPDecision();
-
-        Log.i(TAG, "onStop: !!!!!!!!!");
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();  // Always call the superclass method first
+        Log.i(TAG, "onStop: ");
+    }
+//    @Override
+//    protected void onStop() {
+//        super.onStop();  // Always call the superclass method first
+//        Log.i(TAG, "onStop: !!!!!!!!!");
+//
+//        if (mReceiver != null) {
+//            unregisterReceiver(mReceiver);
+//            mReceiver = null;
+//        }
+//
+//        //cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.AUTO);
+//        //cpuManager.turnOnMPDecision();
+//
+//    }
 
     @Override
     public void onClick(View v) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        turnOffLcd = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean("general_turn_off_monitor", true);
+
         switch (v.getId()) {
             //<editor-fold desc="BTN click switch">
             case R.id.btn_cpu:
