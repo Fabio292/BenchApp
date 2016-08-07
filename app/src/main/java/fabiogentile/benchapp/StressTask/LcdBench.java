@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import fabiogentile.benchapp.CallbackInterfaces.LcdActivityI;
+import fabiogentile.benchapp.Util.CpuManager;
 
 
 public class LcdBench extends AsyncTask<Void, Void, Void> {
@@ -16,11 +17,14 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
     private LcdActivityI listener;
     private int stepDuration;
     private int increment;
+    private CpuManager cpuManager = CpuManager.getInstance();
 
     public LcdBench(LcdActivityI listener, SharedPreferences prefs) {
         this.listener = listener;
         this.stepDuration = Integer.parseInt(prefs.getString("lcd_step_duration", "2000"));
         this.increment = Integer.parseInt(prefs.getString("lcd_step_increment", "5"));
+
+        this.cpuManager.setPreferences(prefs);
     }
 
     @Override
@@ -29,13 +33,13 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
             //Wait for notification bar to disappear
             Thread.sleep(1000);
 
-            Log.i(TAG, "doInBackground: launch script");
-            // TODO: 28/07/16 marker
+            cpuManager.marker();
 
             //USAGE: STEP_DURATION (in ms) VALUE_INCREMENT(0-255)
             String cmd = "su -c sh /sdcard/BENCHMARK/lcd_test.sh "
                     + this.stepDuration + " "
                     + this.increment;
+            Log.i(TAG, "doInBackground: start script " + cmd);
             Process process = Runtime.getRuntime().exec(cmd);
 
             BufferedReader bufferedReader = new BufferedReader(
@@ -46,7 +50,7 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
             }
 
             process.waitFor();
-            Log.i(TAG, "doInBackground: script terminated");
+            Log.i(TAG, "doInBackground: script ended");
             Thread.sleep(1000);
 
         } catch (InterruptedException | IOException e) {

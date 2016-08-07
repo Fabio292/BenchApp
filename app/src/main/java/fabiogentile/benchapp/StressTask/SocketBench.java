@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
+import fabiogentile.benchapp.Util.CpuManager;
 import fabiogentile.benchapp.Util.SocketTypeEnum;
 
 
@@ -20,9 +21,10 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
     private int serverPort;
     private int startRate;
     private int endRate;
-    private int packetPerRate;
+    private int msPerRate;
     private int payloadSize;
     private boolean waitLcdOff = true;
+    private CpuManager cpuManager = CpuManager.getInstance();
 
     public SocketBench(MainActivityI listener, Object token, SharedPreferences prefs, SocketTypeEnum type) {
         this.listener = listener;
@@ -33,7 +35,7 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
             this.serverPort = Integer.parseInt(prefs.getString("wifi_server_port", "29000"));
             this.startRate = Integer.parseInt(prefs.getString("wifi_start_rate", "5"));
             this.endRate = Integer.parseInt(prefs.getString("wifi_end_rate", "20"));
-            this.packetPerRate = Integer.parseInt(prefs.getString("wifi_packet_per_rate", "10"));
+            this.msPerRate = Integer.parseInt(prefs.getString("wifi_packet_per_rate", "10"));
             this.payloadSize = Integer.parseInt(prefs.getString("wifi_payload_size", "256"));
 
         } else {
@@ -41,11 +43,12 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
             this.serverPort = Integer.parseInt(prefs.getString("threeG_server_port", "8080"));
             this.startRate = Integer.parseInt(prefs.getString("threeG_start_rate", "5"));
             this.endRate = Integer.parseInt(prefs.getString("threeG_end_rate", "10"));
-            this.packetPerRate = Integer.parseInt(prefs.getString("threeG_packet_per_rate", "10"));
+            this.msPerRate = Integer.parseInt(prefs.getString("threeG_packet_per_rate", "10"));
             this.payloadSize = Integer.parseInt(prefs.getString("threeG_payload_size", "256"));
         }
 
         this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
+        this.cpuManager.setPreferences(prefs);
     }
 
     @Override
@@ -62,19 +65,19 @@ public class SocketBench extends AsyncTask<String, Void, Void> {
                 }
 
             String netInterface = params[0];
-            Log.i(TAG, "doInBackground: start script on " + netInterface);
-            // TODO: 28/07/16 marker
+            cpuManager.marker();
 
-            //USAGE: IP PORT START_RATE END_RATE PACKET_PER_RATE PAYLOAD_SIZE INTERFACE
+
+            //USAGE: IP PORT START_RATE END_RATE MS_PER_RATE PAYLOAD_SIZE INTERFACE
             String cmd = "su -c /system/xbin/SocketBench "
                     + this.serverIp + " "
                     + this.serverPort + " "
                     + this.startRate + " "
                     + this.endRate + " "
-                    + this.packetPerRate + " "
+                    + this.msPerRate + " "
                     + this.payloadSize + " "
                     + netInterface;
-            Log.i(TAG, "doInBackground: " + cmd);
+            Log.i(TAG, "doInBackground: start script " + cmd);
             Process su = Runtime.getRuntime().exec(cmd);
 
             BufferedReader bufferedReader = new BufferedReader(

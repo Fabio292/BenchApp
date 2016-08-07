@@ -97,8 +97,10 @@ public class CpuManager {
                 Process process = Runtime.getRuntime().exec("su");
                 DataOutputStream out = new DataOutputStream(process.getOutputStream());
 
-                out.writeBytes("echo " + frequencies[freq.ordinal()] + " > " + BASE_CPU_DIR + "/cpu" + index + "/cpufreq/scaling_max_freq\n");
-
+                int f = freq.ordinal();
+                f = frequencies[f];
+                out.writeBytes("echo " + f + " > " + BASE_CPU_DIR + "/cpu" + index + "/cpufreq/scaling_max_freq\n");
+                out.flush();
                 out.writeBytes("exit\n");
                 out.flush();
 
@@ -118,14 +120,17 @@ public class CpuManager {
         int ret = 0;
         if (index >= 0 && index <= coreNumberZERO) {
             try {
-                Process process = Runtime.getRuntime().exec("cat " + BASE_CPU_DIR + "/cpu" + index + "/cpufreq/cpuinfo_cur_freq");
+                String cmd = "su -c cat " + BASE_CPU_DIR + "/cpu" + index + "/cpufreq/cpuinfo_cur_freq";
+                Process process = Runtime.getRuntime().exec(cmd);
 
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(process.getInputStream()));
+
                 String line = bufferedReader.readLine();
                 ret = Integer.parseInt(line);
 
                 process.waitFor();
+
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -283,7 +288,7 @@ $ adb shell start mpdecision
         boolean ret = false;
 
         if (index >= 0 && index <= coreNumberZERO) {
-            Process process = null;
+            Process process;
             try {
                 process = Runtime.getRuntime().exec("cat " + BASE_CPU_DIR + "/cpu" + index + "/online");
 
@@ -309,7 +314,7 @@ $ adb shell start mpdecision
     public int getCoreNumber() {
         int ret = 1;
 
-        Process process = null;
+        Process process;
         try {
             process = Runtime.getRuntime().exec("grep -c ^processor /proc/cpuinfo");
 
@@ -355,17 +360,40 @@ $ adb shell start mpdecision
 //        } catch (IOException | InterruptedException e) {
 //            e.printStackTrace();
 //        }
+//
+//        double val = Double.parseDouble(prefs.getString("general_marker_duration_high", "500"));
+//        markerHigh = 1000.0 / val;
+//        val = Double.parseDouble(prefs.getString("general_marker_duration_low", "500"));
+//        markerLow = 1000.0 / val;
 
-        markerHigh = 1000.0 / Integer.parseInt(prefs.getString("general_marker_duration_high", "500"));
-        markerLow = 1000.0 / Integer.parseInt(prefs.getString("general_marker_duration_low", "500"));
+        markerHigh = Integer.parseInt(prefs.getString("general_marker_duration_high", "500")) / 1000.0;
+        markerLow = Integer.parseInt(prefs.getString("general_marker_duration_low", "500")) / 1000.0;
+
 
         try {
+            this.setCpuProfile(CPU_PROFILE.LOW_POWER);
+
             Log.i(TAG, "marker: LOW");
             Process markerLow = Runtime.getRuntime().exec("/system/xbin/sleep " + this.markerLow);
             markerLow.waitFor();
+            Log.i(TAG, "marker: LOW END");
 
-//            Process markerHigh = Runtime.getRuntime().exec("su");
-//            DataOutputStream out = new DataOutputStream(markerHigh.getOutputStream());
+            this.setCpuProfile(CPU_PROFILE.HIGH_POWER);
+
+            Log.i(TAG, "marker: HIGH");
+            String cmd = "su -c sh /sdcard/BENCHMARK/marker.sh "
+                    + markerHigh + " 2>&1";
+            Process markerHigh = Runtime.getRuntime().exec(cmd);
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(markerHigh.getInputStream()));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                Log.i(TAG, "marker: HIGH " + line);
+            }
+            markerHigh.waitFor();
+            Log.i(TAG, "marker: HIGH END");
+
 
             Log.i(TAG, "marker ended");
             this.setCpuProfile(CPU_PROFILE.APP_NORMAL);
@@ -377,6 +405,9 @@ $ adb shell start mpdecision
 
     }
 
+    /*
+        MAX freq must be set BEFORE
+     */
     /**
      * Set the requested cpu power profile
      *
@@ -390,8 +421,8 @@ $ adb shell start mpdecision
                 //Automatic governor
                 for (int i = 0; i <= coreNumberZERO; i++) {
                     setGovernor(AVAILABLE_GOVERNORS.ONDEMAND, i);
-                    setMinFrequency(AVAILABLE_FREQUENCY._300MHz, i);
                     setMaxFrequency(AVAILABLE_FREQUENCY._2265MHz, i);
+                    setMinFrequency(AVAILABLE_FREQUENCY._300MHz, i);
                 }
 
                 break;
@@ -404,8 +435,8 @@ $ adb shell start mpdecision
 
                 for (int i = 0; i <= coreNumberZERO; i++) {
                     setGovernor(AVAILABLE_GOVERNORS.USERSPACE, i);
-                    setMinFrequency(AVAILABLE_FREQUENCY._1036MHz, i);
-                    setMaxFrequency(AVAILABLE_FREQUENCY._1036MHz, i);
+                    setMaxFrequency(AVAILABLE_FREQUENCY._2265MHz, i);
+                    setMinFrequency(AVAILABLE_FREQUENCY._300MHz, i);
                     setFrequency(AVAILABLE_FREQUENCY._1036MHz, i);
                 }
 
@@ -419,8 +450,8 @@ $ adb shell start mpdecision
 
                 for (int i = 0; i <= coreNumberZERO; i++) {
                     setGovernor(AVAILABLE_GOVERNORS.USERSPACE, i);
-                    setMinFrequency(AVAILABLE_FREQUENCY._2265MHz, i);
                     setMaxFrequency(AVAILABLE_FREQUENCY._2265MHz, i);
+                    setMinFrequency(AVAILABLE_FREQUENCY._300MHz, i);
                     setFrequency(AVAILABLE_FREQUENCY._2265MHz, i);
                 }
                 break;
@@ -428,15 +459,17 @@ $ adb shell start mpdecision
             case LOW_POWER:
                 Log.i(TAG, "setCpuProfile: requested LOW_POWER profile");
 
-                //Turn on all cores
+                //Turn off all cores
                 turnOffCores(coreNumberZERO);
 
-                //for (int i = 0; i <= coreNumberZERO; i++) {
                 setGovernor(AVAILABLE_GOVERNORS.USERSPACE, 0);
+                setMaxFrequency(AVAILABLE_FREQUENCY._2265MHz, 0);
                 setMinFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
-                setMaxFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
-                setFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
-                //}
+                setFrequency(AVAILABLE_FREQUENCY._1036MHz, 0);
+//                setMinFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
+//                setMaxFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
+//                setFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
+
                 break;
 
 
@@ -472,9 +505,9 @@ $ adb shell start mpdecision
     }
 
     public enum CPU_PROFILE {
-        APP_NORMAL,  //all core at low freq
+        APP_NORMAL,  //all core at medium freq - all freq available
         HIGH_POWER, //all cores at max freq
-        LOW_POWER,
+        LOW_POWER,  //1 core at medium freq
         AUTO
     }
 }

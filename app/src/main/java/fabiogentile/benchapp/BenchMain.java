@@ -220,10 +220,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                 Map<String, ?> keys = prefs.getAll();
                 Log.i(TAG, "onClick: " + prefs.getBoolean("general_turn_off_monitor", true));
 
-/*                for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                for (Map.Entry<String, ?> entry : keys.entrySet()) {
                     Log.i("map values", entry.getKey() + ": " +
                             entry.getValue().toString());
-                }*/
+                }
 
                 //new SocketBench(this, syncToken, prefs, SocketTypeEnum.THREEG).execute("rmnet0");
 //                if(this.turnOffLcd)

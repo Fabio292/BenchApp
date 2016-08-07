@@ -15,6 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
+import fabiogentile.benchapp.Util.CpuManager;
 
 
 public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationResolver.LocationResult {
@@ -26,6 +27,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     private int requestTimeout;
     private boolean waitLcdOff = true;
     private Looper loop;
+    private CpuManager cpuManager = CpuManager.getInstance();
 
     public GpsBench(MainActivityI callbackI, Object token, Context context, SharedPreferences prefs) {
         this.context = context;
@@ -33,6 +35,8 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
         this.syncToken = token;
         this.requestTimeout = Integer.parseInt(prefs.getString("gps_request_timeout", "30"));
         this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
+
+        this.cpuManager.setPreferences(prefs);
     }
 
     @Override
@@ -51,12 +55,14 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
             Looper.prepare();
             LocationResolver locationResolver = new LocationResolver();
 
+            cpuManager.marker();
+
             Log.i(TAG, "doInBackground: script started");
-            // TODO: 28/07/16  marker
             if (!locationResolver.getLocation(context, this, 1000 * this.requestTimeout))
                 Log.e(TAG, "doInBackground: error while requesting GPS position");
             this.loop = Looper.myLooper();
             Looper.loop();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -170,8 +176,6 @@ class LocationResolver {
                     gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                 locationCallbackInterface.timeoutOccurred(gpsLocation);
-            } catch (SecurityException e) {
-                e.printStackTrace();
             } catch (Exception e ){
                 e.printStackTrace();
             }

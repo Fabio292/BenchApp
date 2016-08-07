@@ -50,9 +50,9 @@ public class AudioBench extends AsyncTask<Void, Void, Void> {
 
         cpuManager.marker();
 
-        Log.i(TAG, "doInBackground: launch script");
+        Log.i(TAG, "doInBackground: start script");
         for (String fname : audioFiles) {
-            playAudio(fname, 0 * this.playDuration, 0 * this.silenceDuration); //TODO 1000
+            playAudio(fname, 1000 * this.playDuration, 1000 * this.silenceDuration); //TODO 1000
         }
         Log.i(TAG, "doInBackground: script ended");
 
