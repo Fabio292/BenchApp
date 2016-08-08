@@ -57,7 +57,6 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     private CpuManager cpuManager = CpuManager.getInstance();
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -196,20 +195,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         super.onStop();  // Always call the superclass method first
         Log.i(TAG, "onStop: ");
     }
-//    @Override
-//    protected void onStop() {
-//        super.onStop();  // Always call the superclass method first
-//        Log.i(TAG, "onStop: !!!!!!!!!");
-//
-//        if (mReceiver != null) {
-//            unregisterReceiver(mReceiver);
-//            mReceiver = null;
-//        }
-//
-//        //cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.AUTO);
-//        //cpuManager.turnOnMPDecision();
-//
-//    }
+
 
     @Override
     public void onClick(View v) {
@@ -289,8 +275,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     @Override
     public void GpsTaskCompleted(Location location) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        gpsRequestNumber++;
+
         if (location != null) {
-            Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber++ + "}: " + location.getLatitude() + " " + location.getLongitude()
+            Log.i(TAG, "GpsTaskCompleted: Position{" + gpsRequestNumber + "}: " + location.getLatitude() + " " + location.getLongitude()
                     + " " + location.getAltitude() + " accuracy: " + location.getAccuracy());
         } else
             Log.e(TAG, "GpsTaskCompleted: ERROR during GPS position acquiring");

@@ -43,7 +43,7 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
     protected Void doInBackground(Void... params) {
         try {
             //Wait for screen to turn off
-            if (syncToken != null && waitLcdOff)
+            if (syncToken != null && waitLcdOff) {
                 synchronized (syncToken) {
                     try {
                         syncToken.wait();
@@ -52,10 +52,12 @@ public class GpsBench extends AsyncTask<Void, Void, Void> implements LocationRes
                     }
                 }
 
+                cpuManager.marker();
+            }
+
             Looper.prepare();
             LocationResolver locationResolver = new LocationResolver();
 
-            cpuManager.marker();
 
             Log.i(TAG, "doInBackground: script started");
             if (!locationResolver.getLocation(context, this, 1000 * this.requestTimeout))
@@ -176,6 +178,8 @@ class LocationResolver {
                     gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                 locationCallbackInterface.timeoutOccurred(gpsLocation);
+            } catch (SecurityException e) {
+                e.printStackTrace();
             } catch (Exception e ){
                 e.printStackTrace();
             }

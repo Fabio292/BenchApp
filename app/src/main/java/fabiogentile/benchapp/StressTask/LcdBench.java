@@ -12,7 +12,7 @@ import fabiogentile.benchapp.CallbackInterfaces.LcdActivityI;
 import fabiogentile.benchapp.Util.CpuManager;
 
 
-public class LcdBench extends AsyncTask<Void, Void, Void> {
+public class LcdBench extends AsyncTask<Boolean, Void, Void> {
     private final String TAG = "LcdBench";
     private LcdActivityI listener;
     private int stepDuration;
@@ -28,12 +28,16 @@ public class LcdBench extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected Void doInBackground(Boolean... params) {
         try {
-            //Wait for notification bar to disappear
-            Thread.sleep(1000);
+            Boolean firstBench = params[0];
 
-            cpuManager.marker();
+            if (firstBench) {
+                //Wait for notification bar to disappear
+                Thread.sleep(1000);
+
+                cpuManager.marker();
+            }
 
             //USAGE: STEP_DURATION (in ms) VALUE_INCREMENT(0-255)
             String cmd = "su -c sh /sdcard/BENCHMARK/lcd_test.sh "

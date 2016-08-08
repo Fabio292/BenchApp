@@ -1,6 +1,8 @@
 package fabiogentile.benchapp;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.widget.FrameLayout;
 import fabiogentile.benchapp.CallbackInterfaces.LcdActivityI;
 import fabiogentile.benchapp.StressTask.LcdBench;
 import fabiogentile.benchapp.Util.LcdManager;
+import fabiogentile.benchapp.Util.SimpleNotification;
 
 
 public class LcdActivity extends Activity implements LcdActivityI {
@@ -20,6 +23,7 @@ public class LcdActivity extends Activity implements LcdActivityI {
     private LcdManager lcdManager = LcdManager.getInstance();
     private int colorIndex = 0;
     private int[] backgroundColorArray = {Color.BLUE, Color.GREEN, Color.RED};
+    private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
 
 
     @Override
@@ -30,12 +34,16 @@ public class LcdActivity extends Activity implements LcdActivityI {
         layout = (FrameLayout) findViewById(R.id.lcd_activity);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        simpleNotificationManager.setContext(this.getApplicationContext());
+        simpleNotificationManager.setNotificationService(
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+
         Log.i(TAG, "onCreate: launch lcd bench");
         lcdManager.setContentResolver(getContentResolver());
         lcdManager.saveLuminosity();
         lcdManager.setLuminosity(0);
         applyColor(colorIndex);
-        new LcdBench(this, prefs).execute();
+        new LcdBench(this, prefs).execute(true);
     }
 
     private void applyColor(int index) {
@@ -52,12 +60,14 @@ public class LcdActivity extends Activity implements LcdActivityI {
         if (colorIndex >= 0 && colorIndex < backgroundColorArray.length) {
             LcdManager.getInstance().setLuminosity(0);
             applyColor(colorIndex);
-            new LcdBench(this, prefs).execute();
+            new LcdBench(this, prefs).execute(false);
         } else {
             //When there are no more color quit the activity
-            this.finish();
+            Log.i(TAG, "LcdTaskCompleted");
+            simpleNotificationManager.notify("LCD", "LCD Task completed");
             lcdManager.restoreLuminosity();
-            // TODO: 30/07/16 marker uscita
+
+            this.finish();
         }
     }
 
