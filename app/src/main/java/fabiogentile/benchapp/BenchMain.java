@@ -51,6 +51,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     private boolean turnOffLcd = true;
     private int gpsRequestNumber;
     private BroadcastReceiver mReceiver = null;
+    private PowerManager powerManager = null;
+    private PowerManager.WakeLock wakeLockCPU = null;
+
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
     private VolumeManager volumeManager = VolumeManager.getInstance();
@@ -81,6 +84,10 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         cpuManager.turnOffMPDecision();
         cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.APP_NORMAL);
         //</editor-fold>
+
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLockCPU = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "CPUWakeLock");
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -113,6 +120,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             btn_audio.setOnClickListener(this);
         //</editor-fold>
 
+        Log.i(TAG, "onCreate: ");
     }
 
     //<editor-fold desc="PERMISSION">
@@ -181,6 +189,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         super.onDestroy();  // Always call the superclass method first
         Log.i(TAG, "onDestroy: ");
 
+        if (wakeLockCPU.isHeld())
+            wakeLockCPU.release();
+
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
             mReceiver = null;
@@ -196,12 +207,25 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         Log.i(TAG, "onStop: ");
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();  // Always call the superclass method first
+        Log.i(TAG, "onResume: ");
+    }
+
 
     @Override
     public void onClick(View v) {
+        //Read preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         turnOffLcd = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .getBoolean("general_turn_off_monitor", true);
+
+        if (!wakeLockCPU.isHeld())
+            wakeLockCPU.acquire();
+        else
+            Log.e(TAG, "onClick: wakeLock already acquired");
+
 
         switch (v.getId()) {
             //<editor-fold desc="BTN click switch">
@@ -287,6 +311,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
             new GpsBench(this, null, getApplicationContext(), prefs).execute();
         } else {
             simpleNotificationManager.notify("GPS", "Gps task completed");
+            if (wakeLockCPU.isHeld())
+                wakeLockCPU.release();
         }
     }
 
@@ -294,6 +320,8 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     public void CpuTaskCompleted() {
         Log.i(TAG, "CpuTaskCompleted: cpu completed");
         simpleNotificationManager.notify("CPU", "Cpu task completed");
+        if (wakeLockCPU.isHeld())
+            wakeLockCPU.release();
     }
 
     @Override
@@ -301,12 +329,16 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         Log.i(TAG, "AudioTaskCompleted: audio completed");
         simpleNotificationManager.notify("Audio", "Audio task completed");
         volumeManager.restoreVolume();
+        if (wakeLockCPU.isHeld())
+            wakeLockCPU.release();
     }
 
     @Override
     public void WiFiTaskCompleted() {
         Log.i(TAG, "WiFiTaskCompleted: wifi completed");
         simpleNotificationManager.notify("WiFi", "WiFi task completed");
+        if (wakeLockCPU.isHeld())
+            wakeLockCPU.release();
     }
     //</editor-fold>
 
