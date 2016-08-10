@@ -287,6 +287,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
 
             bindPreferenceSummaryToValue(findPreference("lcd_step_duration"));
             bindPreferenceSummaryToValue(findPreference("lcd_step_increment"));
+            bindPreferenceSummaryToValue(findPreference("lcd_color_test"));
         }
 
         @Override

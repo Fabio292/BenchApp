@@ -14,4 +14,9 @@
         android:selectAllOnFocus="true"
         android:title="Luminosity increment for each step (0-255)" />
 
+    <SwitchPreference
+        android:key="lcd_color_test"
+        android:title="Test only color, not luminosity" />
+
+
 </PreferenceScreen>
