@@ -210,6 +210,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
             setHasOptionsMenu(true);
 
             bindPreferenceSummaryToValue(findPreference("cpu_state_duration"));
+            bindPreferenceSummaryToValue(findPreference("cpu_core_number"));
         }
 
         @Override

@@ -16,6 +16,7 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
     private final String TAG = "CpuBench";
     public int frequencyDuration;
     private boolean waitLcdOff = true;
+    private int coreNumbers = 1;
     private MainActivityI listener;
     private Object syncToken;
     private CpuManager cpuManager = CpuManager.getInstance();
@@ -25,6 +26,13 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
         this.syncToken = token;
         this.frequencyDuration = Integer.parseInt(prefs.getString("cpu_state_duration", "5"));
         this.waitLcdOff = prefs.getBoolean("general_turn_off_monitor", true);
+        this.coreNumbers = Integer.parseInt(prefs.getString("cpu_core_number", "1")) - 1;   // subtract 1 for zero-based value
+
+        //Limit coreNumbers range
+        if (coreNumbers < 0)
+            coreNumbers = 0;
+        else if (coreNumbers > cpuManager.coreNumberZERO)
+            coreNumbers = cpuManager.coreNumberZERO;
 
         this.cpuManager.setPreferences(prefs);
     }
@@ -42,42 +50,30 @@ public class CpuBench extends AsyncTask<Void, Void, Void> {
                     }
                 }
 
+            Log.i(TAG, "doInBackground: CORE " + coreNumbers);
+
             cpuManager.marker();
+            cpuManager.turnOnCores(coreNumbers);
 
             for (CpuManager.AVAILABLE_FREQUENCY f : CpuManager.AVAILABLE_FREQUENCY.values()) {
 
-                for (int i = 0; i <= 3; i++) {
+                for (int i = 0; i <= coreNumbers; i++) {
                     cpuManager.setFrequency(f, i);
                 }
 
                 String cmd = "su -c sh /sdcard/BENCHMARK/cpu_test.sh "
                         + frequencyDuration + " 2>&1";
-                Process markerHigh = Runtime.getRuntime().exec(cmd);
+                Process su = Runtime.getRuntime().exec(cmd);
 
                 BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(markerHigh.getInputStream()));
+                        new InputStreamReader(su.getInputStream()));
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
                     Log.i(TAG, "doInBackground: " + cpuManager.getfrequency(0) + " " + line);
                 }
-                markerHigh.waitFor();
+                su.waitFor();
 
             }
-//            //USAGE: duration for each frequency (seconds)
-//            String cmd = "su -c sh /sdcard/BENCHMARK/cpu_test.sh " +
-//                    this.frequencyDuration + " 2>&1";
-//            Log.i(TAG, "doInBackground: start script " + cmd);
-//            Process su = Runtime.getRuntime().exec(cmd);
-//
-//            BufferedReader bufferedReader = new BufferedReader(
-//                    new InputStreamReader(su.getInputStream()));
-//            String line;
-//            while ((line = bufferedReader.readLine()) != null) {
-//                Log.i(TAG, "doInBackground: " + line);
-//            }
-//
-//            su.waitFor();
-//            Log.i(TAG, "doInBackground: script ended");
 
             //Restore normal cpu profile
             cpuManager.setCpuProfile(CpuManager.CPU_PROFILE.APP_NORMAL);

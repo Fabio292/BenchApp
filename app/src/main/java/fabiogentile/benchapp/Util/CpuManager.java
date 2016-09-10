@@ -14,9 +14,9 @@ public class CpuManager {
     private static CpuManager ourInstance = new CpuManager();
     private final String TAG = "CpuManager";
     private final String BASE_CPU_DIR = "/sys/devices/system/cpu";
+    public int coreNumberZERO = -1;
     private int[] frequencies = {300000, 422400, 652800, 729600, 883200, 960000, 1036800, 1190400, 1267200, 1497600, 1574400, 1728000, 1958400, 2265600};
     private String[] governors = {"interactive", "conservative", "ondemand", "userspace", "powersave", "performance"};
-    private int coreNumberZERO = -1;
     private SharedPreferences prefs;
     private double markerHigh = 0;
     private double markerLow = 0;
@@ -140,6 +140,31 @@ public class CpuManager {
     }
 
     /**
+     * Get number of cores
+     * @return number of cores
+     */
+    public int getCoreNumber() {
+        int ret = 1;
+
+        Process process;
+        try {
+            process = Runtime.getRuntime().exec("grep -c ^processor /proc/cpuinfo");
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            String line = bufferedReader.readLine();
+            ret = Integer.parseInt(line);
+
+            process.waitFor();
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    /**
      * Set core governor
      *
      * @param gov   requested governor
@@ -188,21 +213,31 @@ public class CpuManager {
         return ret;
     }
 
+
+    // TODO: 09/09/16 è possibile usare solo questa funzione nel cambio di profilo
     /**
      * Turn on cores
      * @param howMany the number of cores to be turned on
      */
-    private void turnOnCores(int howMany) {
+    public void turnOnCores(int howMany) {
         if (howMany >= 0 && howMany <= coreNumberZERO) {
             try {
                 Process process = Runtime.getRuntime().exec("su");
                 DataOutputStream out = new DataOutputStream(process.getOutputStream());
 
-                for (int i = 0; i <= howMany; i++) {
+                //Turn on
+                int i = 0;
+                for (; i <= howMany; i++) {
                     out.writeBytes("echo 1 > " + BASE_CPU_DIR + "/cpu" + i + "/online\n");
                     //Set min frequency
                     out.writeBytes("echo " + frequencies[0] + " > " + BASE_CPU_DIR + "/cpu" + i + "/scaling_min_freq\n");
                 }
+
+                //Turn off other cores
+                for (; i <= coreNumberZERO; i++) {
+                    out.writeBytes("echo 0 > " + BASE_CPU_DIR + "/cpu" + i + "/online\n");
+                }
+
                 out.writeBytes("exit\n");
                 out.flush();
 
@@ -305,30 +340,6 @@ $ adb shell start mpdecision
         return ret;
     }
 
-    /**
-     * Get number of cores
-     * @return number of cores
-     */
-    public int getCoreNumber() {
-        int ret = 1;
-
-        Process process;
-        try {
-            process = Runtime.getRuntime().exec("grep -c ^processor /proc/cpuinfo");
-
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String line = bufferedReader.readLine();
-            ret = Integer.parseInt(line);
-
-            process.waitFor();
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return ret;
-    }
 
     /**
      * Perform the marker script
@@ -464,9 +475,6 @@ $ adb shell start mpdecision
                 setMaxFrequency(AVAILABLE_FREQUENCY._2265MHz, 0);
                 setMinFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
                 setFrequency(AVAILABLE_FREQUENCY._1036MHz, 0);
-//                setMinFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
-//                setMaxFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
-//                setFrequency(AVAILABLE_FREQUENCY._300MHz, 0);
 
                 break;
 
@@ -475,6 +483,7 @@ $ adb shell start mpdecision
                 Log.e(TAG, "setCpuProfile: error with requested profile: " + profile);
         }
     }
+
 
     public enum AVAILABLE_FREQUENCY {
         _300MHz,

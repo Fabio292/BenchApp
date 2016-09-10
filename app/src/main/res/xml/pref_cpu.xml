@@ -8,4 +8,11 @@
         android:selectAllOnFocus="true"
         android:title="Cpu cycle duration (seconds)" />
 
+    <EditTextPreference
+        android:defaultValue="1"
+        android:inputType="number"
+        android:key="cpu_core_number"
+        android:selectAllOnFocus="true"
+        android:title="Core number" />
+
 </PreferenceScreen>
