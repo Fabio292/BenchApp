@@ -107,6 +107,17 @@
             android:layout_gravity="center_horizontal"
             android:text="@string/btn_audio" />
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="7dp" />
+
+        <Button
+            android:id="@+id/btn_sort"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/btn_sort" />
+
     </LinearLayout>
 
 </ScrollView>

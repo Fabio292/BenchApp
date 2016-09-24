@@ -9,6 +9,7 @@
     <string name="btn_screen">Screen</string>
     <string name="btn_gps">GPS</string>
     <string name="btn_audio">AUDIO</string>
+    <string name="btn_sort">SORT</string>
     <string name="txt_subt">Press on buttons to start benchmark</string>
 
     <string name="title_activity_lcd">LcdActivity</string>

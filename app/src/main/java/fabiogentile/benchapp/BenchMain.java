@@ -17,7 +17,6 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -27,13 +26,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import fabiogentile.benchapp.CallbackInterfaces.MainActivityI;
+import fabiogentile.benchapp.CallbackInterfaces.SortActivityI;
 import fabiogentile.benchapp.StressTask.AudioBench;
 import fabiogentile.benchapp.StressTask.CpuBench;
 import fabiogentile.benchapp.StressTask.GpsBench;
 import fabiogentile.benchapp.StressTask.SocketBench;
+import fabiogentile.benchapp.StressTask.SortBench;
 import fabiogentile.benchapp.Util.CpuManager;
 import fabiogentile.benchapp.Util.LcdEventReceiver;
 import fabiogentile.benchapp.Util.LcdManager;
@@ -42,7 +44,8 @@ import fabiogentile.benchapp.Util.SocketTypeEnum;
 import fabiogentile.benchapp.Util.VolumeManager;
 
 
-public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI, ActivityCompat.OnRequestPermissionsResultCallback {
+public class BenchMain extends AppCompatActivity implements View.OnClickListener, MainActivityI,
+        ActivityCompat.OnRequestPermissionsResultCallback, SortActivityI {
     private static final int REQUEST_ACCESS_LOCATION = 1;
     private static final int REQUEST_INTERNET = 2;
     private static final int REQUEST_WAKELOCK = 3;
@@ -53,6 +56,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     private BroadcastReceiver mReceiver = null;
     private PowerManager powerManager = null;
     private PowerManager.WakeLock wakeLockCPU = null;
+    private long sortStartTime = 0;
 
     private LcdManager lcdManager = LcdManager.getInstance();
     private SimpleNotification simpleNotificationManager = SimpleNotification.getInstance();
@@ -118,6 +122,9 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         Button btn_audio = (Button) findViewById(R.id.btn_audio);
         if (btn_audio != null)
             btn_audio.setOnClickListener(this);
+        Button btn_sort = (Button) findViewById(R.id.btn_sort);
+        if (btn_sort != null)
+            btn_sort.setOnClickListener(this);
         //</editor-fold>
 
         Log.i(TAG, "onCreate: ");
@@ -129,29 +136,54 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
      */
     @TargetApi(Build.VERSION_CODES.M)
     private void askPermission(){
+        ArrayList<String> permList = new ArrayList<>();
+        Context context = getApplicationContext();
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            requestPermission(Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_ACCESS_LOCATION);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
-            requestPermission(Manifest.permission.INTERNET, REQUEST_INTERNET);
+        if (context.checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+            permList.add(Manifest.permission.INTERNET);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
-            requestPermission(Manifest.permission.WAKE_LOCK, REQUEST_WAKELOCK);
+        if (context.checkSelfPermission(Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
+            permList.add(Manifest.permission.WAKE_LOCK);
+
+        if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            permList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if (context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
+            permList.add(Manifest.permission.READ_PHONE_STATE);
+
+        if (context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            permList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        if (context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            permList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        //Check if some permission are needed
+        if (permList.size() > 0) {
+            String[] permArray = new String[permList.size()];
+
+            int i = 0;
+            for (String perm : permList) {
+                permArray[i++] = perm;
+            }
+
+            ActivityCompat.requestPermissions(this, permArray, 1);
+        }
+
 
         if (!Settings.System.canWrite(this)) {
             Intent grantIntent = new   Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
             startActivity(grantIntent);
         }
+
     }
 
+//    private void requestPermission(String permissionName, int permissionRequestCode) {
+//        ActivityCompat.requestPermissions(this,
+//                new String[]{permissionName}, permissionRequestCode);
+//    }
 
-    private void requestPermission(String permissionName, int permissionRequestCode) {
-        ActivityCompat.requestPermissions(this,
-                new String[]{permissionName}, permissionRequestCode);
-    }
-
-
+    @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         for (int i = 0; i < permissions.length; i++) {
             Log.i(TAG, "onRequestPermissionsResult: " + permissions[i] + "=" + grantResults[i]);
@@ -184,6 +216,7 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
         }
     }
     //</editor-fold>
+
     @Override
     protected void onDestroy() {
         super.onDestroy();  // Always call the superclass method first
@@ -288,6 +321,12 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
                     lcdManager.turnScreenOff();
                 break;
 
+            case R.id.btn_sort:
+                Log.i(TAG, "onClick: SORT");
+                this.sortStartTime = System.currentTimeMillis();
+                new SortBench(this).execute();
+                break;
+
             default:
                 Log.e(TAG, "onClick: button not recognized");
                 break;
@@ -337,6 +376,15 @@ public class BenchMain extends AppCompatActivity implements View.OnClickListener
     public void WiFiTaskCompleted() {
         Log.i(TAG, "WiFiTaskCompleted: wifi completed");
         simpleNotificationManager.notify("WiFi", "WiFi task completed");
+        if (wakeLockCPU.isHeld())
+            wakeLockCPU.release();
+    }
+
+    @Override
+    public void sortTaskCompleted() {
+        long stopTime = System.currentTimeMillis();
+        Log.i(TAG, "sortTaskCompleted: sort completed in: " + (stopTime - this.sortStartTime) + " ms");
+
         if (wakeLockCPU.isHeld())
             wakeLockCPU.release();
     }

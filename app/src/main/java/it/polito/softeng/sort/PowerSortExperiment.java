@@ -287,8 +287,11 @@ public class PowerSortExperiment {
         marker(markerLength);
         for (int i = 0; i < nRuns; ++i) {
             sorter.sort(replica[i]);
-            marker(markerLength);
+            //marker(markerLength);
         }
+
+        // end runs
+        marker(markerLength);
 
         res -= System.currentTimeMillis();
 
