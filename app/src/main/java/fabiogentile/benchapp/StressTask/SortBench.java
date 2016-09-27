@@ -54,15 +54,21 @@ public class SortBench extends AsyncTask<Void, Void, Void> {
                 + " algo: \"" + this.sortAlgorithm + "\" item_number: "
                 + this.arraySize + " repetitions: " + this.runsNumber);
 
-        sorter = new PowerSortExperiment(sortAlgorithm, this.arraySize,
-                PowerSortExperiment.SortingType.RANDOM1);
+        try {
+            sorter = new PowerSortExperiment(sortAlgorithm, this.arraySize,
+                    PowerSortExperiment.SortingType.RANDOM1);
 
-        sorter.setNRuns(this.runsNumber);
-        sorter.setMarkerLength(this.markerLength);
-        Log.i(TAG, "doInBackground: Lancio l'esecuzione ");
-        long time = sorter.runExperiment();
+            sorter.setNRuns(this.runsNumber);
+            sorter.setMarkerLength(this.markerLength);
+            Log.i(TAG, "doInBackground: Lancio l'esecuzione ");
+            long time = sorter.runExperiment();
 
-        Log.i(TAG, "doInBackground: " + time);
+            Log.i(TAG, "doInBackground: " + (-time));
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "doInBackground: cannot found algorithm + " + this.sortAlgorithm);
+        }
+
+
 
         return null;
     }
