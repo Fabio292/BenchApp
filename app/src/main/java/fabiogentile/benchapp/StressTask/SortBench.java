@@ -77,6 +77,13 @@ public class SortBench extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
+        try {
+            // This sleep is used to provide visual separation on the chart
+            Thread.sleep(this.pauseTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         for (SortRunConfig s : this.configList) {
 
             try {
