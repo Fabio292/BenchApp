@@ -35,14 +35,12 @@ public class SortTestActivity extends AppCompatActivity implements SortActivityI
             Log.i(TAG, "sortTaskCompleted: " + (stopTime - startTime) + " ms");
         }
 
-
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 finish();
             }
         }, 2000);
-
 
     }
 }

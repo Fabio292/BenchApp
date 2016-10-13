@@ -3,45 +3,72 @@ package fabiogentile.benchapp.StressTask;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+//import org.json.simple.parser.JSONParser;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import fabiogentile.benchapp.CallbackInterfaces.SortActivityI;
 import it.polito.softeng.sort.PowerSortExperiment;
+import it.polito.softeng.sort.PowerSortExperiment.SortingType;
 
 /**
  * Created by Fabio Gentile on 23/09/16.
  */
 public class SortBench extends AsyncTask<Void, Void, Void> {
-    private static final String TAG = "SorctBench";
+    private static final String TAG = "SortBench";
     private static final String CONFIG_FILE_PATH = "/sdcard/SortTest/config.json";
     private PowerSortExperiment sorter;
     private SortActivityI callbackI;
-    private String sortAlgorithm;
-    private int arraySize;
+
     private int markerLength;
-    private int runsNumber;
+    private int pauseTime;
+    private List<SortRunConfig> configList;
 
     public SortBench(SortActivityI iface) {
         this.callbackI = iface;
 
-        // read config.json
-        JSONParser parser = new JSONParser();
         try {
+            String json = getStringFromFile(CONFIG_FILE_PATH);
+            JSONObject jsonObject = new JSONObject(json);
 
-            Object obj = parser.parse(new FileReader(CONFIG_FILE_PATH));
-            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray runsArray = (JSONArray) jsonObject.get("runs");
+            int len = runsArray.length();
+            this.configList = new ArrayList<>(len);
 
-//            JSONArray companyList = (JSONArray) jsonObject.get("Company List");
+            // Parse element and insert into list
+            for (int i = 0; i < len; i++) {
+                JSONObject configObj = runsArray.optJSONObject(i);
+                if(configObj ==null)
+                    continue;
 
-            this.sortAlgorithm = (String) jsonObject.get("method");
-            this.arraySize = (int) (long) jsonObject.get("array_size");
-            this.markerLength = (int) (long) jsonObject.get("marker_length");
-            this.runsNumber = (int) (long) jsonObject.get("runs_number");
+                String sortAlgorithm = (String) configObj.get("method");
+                int arraySize = (int) configObj.get("array_size");
+                SortingType generationMethod = parseSortType((String) configObj.get("sort_type"));
+                int runsNum = (int) configObj.get("runs_number");
+
+                SortRunConfig conf =
+                        new SortRunConfig(sortAlgorithm, generationMethod, arraySize, runsNum);
+
+                this.configList.add(conf);
+            }
+
+            this.markerLength = (int) jsonObject.get("marker_length");
+            this.pauseTime = (int) jsonObject.get("pause_time");
+
+            Log.i(TAG, "SortBench: MARKER: " + markerLength + " PAUSE: " + pauseTime);
 
         } catch (Exception e) {
+            Log.e(TAG, "SortBench: Error parsing JSON: " + e.getLocalizedMessage());
             e.printStackTrace();
         }
 
@@ -50,23 +77,46 @@ public class SortBench extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
-        Log.i(TAG, "doInBackground: marker_length: " + this.markerLength
-                + " algo: \"" + this.sortAlgorithm + "\" item_number: "
-                + this.arraySize + " repetitions: " + this.runsNumber);
+        for (SortRunConfig s : this.configList) {
 
-        try {
-            sorter = new PowerSortExperiment(sortAlgorithm, this.arraySize,
-                    PowerSortExperiment.SortingType.RANDOM1);
+            try {
+                Log.i(TAG, "doInBackground: [ALGO]: " + s.sortAlgorithm + " [SORT_TYPE]: " + s.sortType +
+                        " [ARRAY_SIZE]: " + s.arraySize + " [REP]: " + s.repNumber);
 
-            sorter.setNRuns(this.runsNumber);
-            sorter.setMarkerLength(this.markerLength);
-            Log.i(TAG, "doInBackground: Lancio l'esecuzione ");
-            long time = sorter.runExperiment();
+                sorter = new PowerSortExperiment(s.sortAlgorithm, s.arraySize, s.sortType);
+                sorter.setNRuns(s.repNumber);
+                sorter.setMarkerLength(this.markerLength);
 
-            Log.i(TAG, "doInBackground: " + (-time));
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "doInBackground: cannot found algorithm + " + this.sortAlgorithm);
+                long time = sorter.runExperiment();
+                Log.i(TAG, "doInBackground: " + (-time));
+
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "doInBackground: cannot found algorithm + " + s.sortAlgorithm);
+            }
+
+            try {
+                Thread.sleep(this.pauseTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         }
+
+
+
+//        try {
+//            sorter = new PowerSortExperiment(sortAlgorithm, this.arraySize,
+//                    PowerSortExperiment.SortingType.RANDOM1);
+//
+//            sorter.setNRuns(this.runsNumber);
+//            sorter.setMarkerLength(this.markerLength);
+//            Log.i(TAG, "doInBackground: Lancio l'esecuzione ");
+//            long time = sorter.runExperiment();
+//
+//            Log.i(TAG, "doInBackground: " + (-time));
+//        } catch (IllegalArgumentException e) {
+//            Log.e(TAG, "doInBackground: cannot found algorithm + " + this.sortAlgorithm);
+//        }
 
 
 
@@ -77,5 +127,60 @@ public class SortBench extends AsyncTask<Void, Void, Void> {
         callbackI.sortTaskCompleted();
     }
 
+    /**
+     * Parse the value og generation method string and return the proper enum value
+     */
+    private SortingType parseSortType(String generationMethod){
+        switch (generationMethod.toLowerCase()){
+            case "r1":
+                return SortingType.RANDOM1;
+            case "r2":
+                return SortingType.RANDOM2;
+            case "r3":
+                return SortingType.RANDOM3;
+            case "sort":
+                return SortingType.SORTED;
+            case "rev":
+                return SortingType.REVERSE;
+            default:
+                return SortingType.RANDOM1;
+        }
+    }
 
+    //<editor-fold desc="File to string">
+    private static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    private static String getStringFromFile (String filePath) throws Exception {
+        File fl = new File(filePath);
+        FileInputStream fin = new FileInputStream(fl);
+        String ret = convertStreamToString(fin);
+        //Make sure you close all streams.
+        fin.close();
+        return ret;
+    }
+    //</editor-fold>
+}
+
+
+class SortRunConfig {
+    public String sortAlgorithm;
+    public SortingType sortType;
+    public int arraySize;
+    public int repNumber;
+
+    public SortRunConfig(String p_sortAlgorithm, SortingType p_generationMethod, int p_arraySize, int p_repNumber){
+        this.sortAlgorithm = p_sortAlgorithm;
+        this.sortType = p_generationMethod;
+        this.arraySize = p_arraySize;
+        this.repNumber = p_repNumber;
+    }
 }
