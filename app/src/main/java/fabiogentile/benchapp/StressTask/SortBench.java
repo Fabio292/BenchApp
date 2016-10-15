@@ -64,6 +64,7 @@ public class SortBench extends AsyncTask<Void, Void, Void> {
 
             this.markerLength = (int) jsonObject.get("marker_length");
             this.pauseTime = (int) jsonObject.get("pause_time");
+            Thread.sleep(this.markerLength);
 
             Log.i(TAG, "SortBench: MARKER: " + markerLength + " PAUSE: " + pauseTime);
 
@@ -100,14 +101,16 @@ public class SortBench extends AsyncTask<Void, Void, Void> {
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "doInBackground: cannot found algorithm + " + s.sortAlgorithm);
             }
+            //Ending marker
 
             try {
                 Thread.sleep(this.pauseTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
+
+        PowerSortExperiment.marker(this.markerLength);
 
 
 

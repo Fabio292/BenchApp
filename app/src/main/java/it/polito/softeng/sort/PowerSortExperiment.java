@@ -1,5 +1,8 @@
 package it.polito.softeng.sort;
 
+import android.util.Log;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -168,22 +171,35 @@ public class PowerSortExperiment {
     public static void marker(long markerLength) {
         try {
             // SLEEP
+            Log.d("SORT", "marker: LOW");
             Thread.sleep(markerLength);
+            //Log.d("SORT", "marker: END LOW");
 
             // BUSY
-            long temp = System.currentTimeMillis() + markerLength;
-            while (temp > System.currentTimeMillis()) {
-                @SuppressWarnings("unused") // this is just to keep the CPU busy...
-                        int count = 0;
-                for (int i = 0; i < markerLength; ++i) {
-                    count += i;
-                }
-            }
+//            long temp = System.currentTimeMillis() + markerLength;
+//            while (temp > System.currentTimeMillis()) {
+//                @SuppressWarnings("unused") // this is just to keep the CPU busy...
+//                        int count = 0;
+//                for (int i = 0; i < markerLength; ++i) {
+//                    count += i;
+//                }
+//            }
+            double high = markerLength/1000.0;
+            Log.d("SORT", "marker: HIGH: " + high);
+            String cmd = "sh /sdcard/BENCHMARK/marker.sh " + high;
+            Process markerHigh = Runtime.getRuntime().exec(cmd);
+            markerHigh.waitFor();
+            //Log.d("SORT", "marker: END HIGH");
+
 
             // SLEEP
+            Log.d("SORT", "marker: LOW");
             Thread.sleep(markerLength);
+            //Log.d("SORT", "marker: END LOW");
         } catch (InterruptedException e) {
 
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -213,8 +229,8 @@ public class PowerSortExperiment {
                 }
                 break;
             case REVERSE:
-                for (int i = size - 1; i >= 0; --i) {
-                    a[i] = i;
+                for (int i = size - 1, j = 0; i >= 0; --i, j++) {
+                    a[i] = j;
                 }
                 break;
             case SORTED:
@@ -274,6 +290,7 @@ public class PowerSortExperiment {
         this.markerLength = markerLength;
     }
 
+
     public long runExperiment() {
         long res = System.currentTimeMillis();
 
@@ -291,7 +308,7 @@ public class PowerSortExperiment {
         }
 
         // end runs
-        marker(markerLength);
+        //marker(markerLength);
 
         res -= System.currentTimeMillis();
 
