@@ -17,6 +17,6 @@
 
     <SwitchPreference
         android:key="general_turn_off_monitor"
-        android:title="Turn off monitor before bench" />
+        android:title="Turn off monitor before test" />
 
 </PreferenceScreen>

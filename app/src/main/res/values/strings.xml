@@ -6,7 +6,7 @@
     <string name="btn_cpu">CPU</string>
     <string name="btn_wifi">Wi-Fi</string>
     <string name="btn_3g">3G</string>
-    <string name="btn_screen">Screen</string>
+    <string name="btn_screen">Display</string>
     <string name="btn_gps">GPS</string>
     <string name="btn_audio">AUDIO</string>
     <string name="btn_sort">SORT</string>

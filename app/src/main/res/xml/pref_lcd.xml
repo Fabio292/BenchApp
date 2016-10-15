@@ -5,18 +5,18 @@
         android:inputType="number"
         android:key="lcd_step_duration"
         android:selectAllOnFocus="true"
-        android:title="Duration of luminosity step (in ms)" />
+        android:title="Duration of step (in ms)" />
 
     <EditTextPreference
         android:defaultValue="@string/default_lcd_step_increment"
         android:inputType="number"
         android:key="lcd_step_increment"
         android:selectAllOnFocus="true"
-        android:title="Luminosity increment for each step (0-255)" />
+        android:title="Brightness increment for each step (0-255)" />
 
     <SwitchPreference
         android:key="lcd_color_test"
-        android:title="Test only color, not luminosity" />
+        android:title="Test only colour, not luminosity" />
 
 
 </PreferenceScreen>
