@@ -292,7 +292,6 @@ public class PowerSortExperiment {
 
 
     public long runExperiment() {
-        long res = System.currentTimeMillis();
 
         int[][] replica = new int[nRuns][a.length];
 
@@ -302,14 +301,11 @@ public class PowerSortExperiment {
 
         // start runs
         marker(markerLength);
+
+        long res = System.currentTimeMillis();
         for (int i = 0; i < nRuns; ++i) {
             sorter.sort(replica[i]);
-            //marker(markerLength);
         }
-
-        // end runs
-        //marker(markerLength);
-
         res -= System.currentTimeMillis();
 
         if (KEEP_RESULTS) {
